@@ -29,9 +29,10 @@ namespace PlexLander
         {
             // Add framework services.
             services.AddMvc();
+            var settings = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettings => {
-                appSettings.PlexUrl = Configuration["PlexUrl"];
-                appSettings.Hostname = Configuration["Hostname"];
+                appSettings.PlexUrl = settings["PlexUrl"];
+                appSettings.Hostname = settings["Hostname"];
             });
         }
 
