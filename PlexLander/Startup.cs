@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PlexLander.ViewModels.Landing;
 
 namespace PlexLander
 {
@@ -29,18 +30,6 @@ namespace PlexLander
         {
             // Add framework services.
             services.AddMvc();
-            ConfigureAppSettings(services);
-        }
-
-
-        private void ConfigureAppSettings(IServiceCollection services)
-        {
-            var settings = Configuration.GetSection("AppSettings");
-            services.Configure<AppSettings>(appSettings => {
-                appSettings.PlexPath = settings["PlexPath"];
-                appSettings.Hostname = settings["Hostname"];
-                appSettings.Transport = settings["Transport"];
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,19 +10,10 @@ namespace PlexLander.Controllers
 {
     public class LandingController : PlexLanderBaseController
     {
-        public LandingController(IOptions<AppSettings> options) : base(options)
-        {
-        }
 
         public IActionResult Index()
         {
-            var uriBuilder = new UriBuilder()
-            {
-                Host = AppSettings.Hostname,
-                Path = AppSettings.PlexPath,
-                Scheme = AppSettings.Transport
-            };
-            return View(new LandingViewModel() { PlexUrl = uriBuilder.Uri });
+            return View();
         }
 
 

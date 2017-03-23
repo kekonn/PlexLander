@@ -9,19 +9,6 @@ namespace PlexLander.Controllers
 {
     public class PlexLanderBaseController : Controller
     {
-        private readonly AppSettings _appSettings;
-
-        public AppSettings AppSettings
-        {
-            get
-            {
-                return _appSettings;
-            }
-        }
-
-        public PlexLanderBaseController(IOptions<AppSettings> options) : base()
-        {
-            _appSettings = options.Value;
-        }
+        
     }
 }

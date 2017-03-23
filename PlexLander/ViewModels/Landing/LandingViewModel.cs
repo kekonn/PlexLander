@@ -7,6 +7,23 @@ namespace PlexLander.ViewModels.Landing
 {
     public class LandingViewModel
     {
-        public Uri PlexUrl { get; set; }
+        public IEnumerable<LandingApp> AppList { get; set; }
+    }
+
+    public class LandingApp
+    {
+        /// <summary>
+        /// The url we have to call 
+        /// </summary>
+        public string Url { get; set; }
+        /// <summary>
+        /// a local url to an image that serves as an icon.
+        /// </summary>
+        public string Icon { get; set; }
+
+        /// <summary>
+        /// The display name that is used on the website
+        /// </summary>
+        public string Name { get; set; }
     }
 }
