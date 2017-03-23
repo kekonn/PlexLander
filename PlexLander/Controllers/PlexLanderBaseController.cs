@@ -22,7 +22,6 @@ namespace PlexLander.Controllers
         public PlexLanderBaseController(IOptions<AppSettings> options) : base()
         {
             _appSettings = options.Value;
-            ViewData["Hostname"] = _appSettings.Hostname;
         }
     }
 }

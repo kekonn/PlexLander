@@ -8,6 +8,7 @@ namespace PlexLander
     public class AppSettings
     {
         public string Hostname { get; set; }
-        public string PlexUrl { get; set; }
+        public string PlexPath { get; set; }
+        public string Transport { get; set; }
     }
 }

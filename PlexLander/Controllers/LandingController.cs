@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PlexLander.ViewModels.Landing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -15,8 +16,13 @@ namespace PlexLander.Controllers
 
         public IActionResult Index()
         {
-            ViewData["PlexUrl"] = AppSettings.PlexUrl;
-            return View();
+            var uriBuilder = new UriBuilder()
+            {
+                Host = AppSettings.Hostname,
+                Path = AppSettings.PlexPath,
+                Scheme = AppSettings.Transport
+            };
+            return View(new LandingViewModel() { PlexUrl = uriBuilder.Uri });
         }
 
 
