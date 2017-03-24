@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PlexLander.ViewModels.Landing;
+using Microsoft.EntityFrameworkCore;
+using PlexLander.Data;
 
 namespace PlexLander
 {
@@ -30,10 +31,13 @@ namespace PlexLander
         {
             // Add framework services.
             services.AddMvc();
+            //Add EFCore
+            services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, PlexLanderContext context)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -47,6 +51,8 @@ namespace PlexLander
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            DbInitializer.Initialize(context);
 
             app.UseStaticFiles();
 
