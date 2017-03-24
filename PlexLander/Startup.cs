@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using PlexLander.Data;
+using PlexLander.Configuration;
 
 namespace PlexLander
 {
@@ -31,6 +32,8 @@ namespace PlexLander
         {
             // Add framework services.
             services.AddMvc();
+            //Configure server
+            services.Configure<ServerConfiguration>(config => config.ServerName = Configuration.GetSection("ServerConfiguration").GetValue("ServerName","PlexLander"));
             //Add EFCore
             services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             

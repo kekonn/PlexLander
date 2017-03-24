@@ -6,7 +6,7 @@ using PlexLander.Models;
 
 namespace PlexLander.ViewModels.Landing
 {
-    public class LandingViewModel
+    public class LandingViewModel : ViewModelBase
     {
         public ICollection<App> AppList { get; set; }
     }

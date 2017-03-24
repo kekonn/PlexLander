@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using PlexLander.Configuration;
+using PlexLander.ViewModels;
 
 namespace PlexLander.Controllers
 {
-    public class PlexLanderBaseController : Controller
+    public abstract class PlexLanderBaseController : Controller
     {
-        
+        protected string ServerName { get; private set; }
+
+        public PlexLanderBaseController(IOptions<ServerConfiguration> config) : base()
+        {
+            ServerName = config.Value.ServerName;
+        }
     }
 }
