@@ -3,13 +3,34 @@
     <h1>Welcome to Volk!</h1>
     <p class="lead">Check what's new or add something new. It's up to you!</p>
 </div>
-<div class="row">
-    <div class="col-md-4">
-        <p>Plex</p>
-    </div>
-    <div class="col-md-4">
-        <p>
-            Radarr
-        </p>
-    </div>
-</div>
+@{ 
+    int appCount = @Model.AppList.Count();
+    int rowCount = (appCount / 3) + (appCount % 3);
+    var appEnumerator = Model.AppList.GetEnumerator();
+    for (var i = 1; i <= rowCount; i++)
+    {
+        <div class="row">
+            <div class="col-md-4">
+                <div>
+                    <img src="@appEnumerator.Current.Icon" width="256" height="256" /><br/>
+                    <a href="@appEnumerator.Current.Url"><h3>@appEnumerator.Current.Name</h3></a>
+                    @appEnumerator.MoveNext();
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div>
+                    <img src="@appEnumerator.Current.Icon" width="256" height="256" /><br />
+                    <a href="@appEnumerator.Current.Url"><h3>@appEnumerator.Current.Name</h3></a>
+                    @appEnumerator.MoveNext();
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div>
+                    <img src="@appEnumerator.Current.Icon" width="256" height="256" /><br />
+                    <a href="@appEnumerator.Current.Url"><h3>@appEnumerator.Current.Name</h3></a>
+                    @appEnumerator.MoveNext();
+                </div>
+            </div>
+        </div>
+    }
+}
