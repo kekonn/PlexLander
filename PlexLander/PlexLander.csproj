@@ -21,5 +21,9 @@
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ViewModels\Settings\" />
+    <Folder Include="Views\Settings\" />
+  </ItemGroup>
 
 </Project>

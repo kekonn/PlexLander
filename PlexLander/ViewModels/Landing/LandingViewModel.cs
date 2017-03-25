@@ -8,6 +8,10 @@ namespace PlexLander.ViewModels.Landing
 {
     public class LandingViewModel : ViewModelBase
     {
+        public LandingViewModel(string serverName) : base(serverName)
+        {
+        }
+
         public ICollection<App> AppList { get; set; }
     }
 }
