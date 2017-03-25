@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PlexLander.Configuration;
 using PlexLander.Data;
 using PlexLander.ViewModels.Settings;
+using PlexLander.Models;
+using System.Collections.Generic;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,7 +21,8 @@ namespace PlexLander.Controllers
         // GET: /<controller>/
         public IActionResult Index()
         {
-            return View(new SettingsIndexViewModel(ServerName) { ActiveControllerName = ControllerName });
+            var apps = new List<App>(Context.Apps.AsEnumerable());
+            return View(new SettingsIndexViewModel(ServerName) { ActiveControllerName = ControllerName, Apps = apps });
         }
     }
 }

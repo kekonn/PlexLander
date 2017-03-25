@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace PlexLander.TagHelpers
 {
@@ -15,6 +17,7 @@ namespace PlexLander.TagHelpers
     {
         private const string ActionAttributeName = "bs-action";
         private const string ControllerAttributeName = "bs-controller";
+        private const string AreaAttributeName = "bs-area";
         private const string NavigationActiveClassAttributeName = "bs-navigation-active-class";
         private const string AttributeName = "class";
 
@@ -32,6 +35,9 @@ namespace PlexLander.TagHelpers
 
         [HtmlAttributeName(NavigationActiveClassAttributeName)]
         public string ActiveClass { get; set; }
+
+        [HtmlAttributeName(AreaAttributeName)]
+        public string Area { get; set; } = String.Empty;
 
         /// <summary>
         /// Gets or sets the <see cref="Rendering.ViewContext"/> for the current request.
@@ -54,21 +60,42 @@ namespace PlexLander.TagHelpers
             RouteValueDictionary currentRouteValues = ViewContext.RouteData.Values;
             RouteValueDictionary targetRouteValues = RouteValuesFromAttributes();
 
-            if (!RouteValuesAreEqual(currentRouteValues,targetRouteValues))
+            if (!RouteValuesAreEqual(currentRouteValues, targetRouteValues))
+                return; //we are done, this is not the active item
+
+            if (!String.IsNullOrWhiteSpace(Area) && !AreAreasEqual(Area))
                 return; //we are done, this is not the active item
 
             string classValue;
             if (output.Attributes.ContainsName(AttributeName))
             {
                 //the user predefined one or more classes
-                classValue = String.Format("{0} {1}",output.Attributes[AttributeName].Value,ActiveClass);
-            } else
+                classValue = String.Format("{0} {1}", output.Attributes[AttributeName].Value, ActiveClass);
+            }
+            else
             {
                 classValue = ActiveClass;
             }
 
             output.Attributes.SetAttribute(AttributeName, classValue);
             output.Content = content;
+        }
+
+        private bool AreAreasEqual(string expectedArea)
+        {
+            PathString currentPath = ViewContext.HttpContext.Request.Path; //TODO: find better method, this does not actually include the area
+            string area = String.Empty;
+            if (currentPath.HasValue) //there is a path
+            {
+                var splitPath = currentPath.Value.Split('#');
+                if (splitPath.Count() > 1)
+                {
+                    area = splitPath[1];
+                    return area.Equals(Area, StringComparison.OrdinalIgnoreCase); //current path contains area, return if it equals to expected area
+                }
+            }
+
+            return String.IsNullOrWhiteSpace(expectedArea); //no area defined an no area in current path
         }
 
         private RouteValueDictionary RouteValuesFromAttributes()
@@ -80,32 +107,42 @@ namespace PlexLander.TagHelpers
                 dictionary.Add("controller", Controller);
             }
 
-            if(!String.IsNullOrEmpty(Action))
+            if (!String.IsNullOrEmpty(Action))
             {
                 dictionary.Add("action", Action);
             }
-
 
             return dictionary;
         }
 
         private bool RouteValuesAreEqual(RouteValueDictionary dictionaryA, RouteValueDictionary dictionaryB)
         {
-            bool areEqual = false;
-
             //do both have controllers defined?
-            bool bothHaveControllers = dictionaryA.ContainsKey("controller") && dictionaryB.ContainsKey("controller");
-            if (bothHaveControllers)
-            {
-                areEqual = dictionaryA["controller"].ToString().Equals(dictionaryB["controller"].ToString(), StringComparison.OrdinalIgnoreCase);
-            }
+            bool bothHaveControllers = DictionariesHaveMatchingKeys(dictionaryA, dictionaryB, "controller");
 
-            bool bothHaveActions = dictionaryA.ContainsKey("action") && dictionaryB.ContainsKey("action");
-            
-            if (bothHaveActions)
-                areEqual &= dictionaryA["action"].ToString().Equals(dictionaryB["action"].ToString(), StringComparison.OrdinalIgnoreCase);
+            //do both controllers have actions?
+            bool bothHaveActions = DictionariesHaveMatchingKeys(dictionaryA, dictionaryB, "action");
 
-            return areEqual;
+            return bothHaveControllers && bothHaveActions;
+        }
+
+        /// <summary>
+        /// Checks if two dictionaries have the same key and if so, if both keys .ToString()'s are equal
+        /// </summary>
+        /// <param name="dictionaryA"></param>
+        /// <param name="dictionaryB"></param>
+        /// <param name="key"></param>
+        /// <returns>true if the dictionaries both give a key</returns>
+        private bool DictionariesHaveMatchingKeys(RouteValueDictionary dictionaryA, RouteValueDictionary dictionaryB, string key)
+        {
+            if (dictionaryA == null)
+                throw new ArgumentNullException("dictionaryA");
+
+            if (dictionaryB == null)
+                throw new ArgumentNullException("dictionaryB");
+
+            bool bothHaveKeys = dictionaryA.ContainsKey(key) && dictionaryB.ContainsKey(key);
+            return bothHaveKeys && dictionaryA[key].ToString().Equals(dictionaryB[key].ToString(), StringComparison.OrdinalIgnoreCase);
         }
     }
 }

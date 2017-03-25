@@ -1,3 +1,20 @@
-<bootstrap-page-header>
-    <h1>Settings</h1>
-</bootstrap-page-header>
+@using PlexLander.Models
+@using PlexLander.ViewModels.Settings
+@model SettingsIndexViewModel
+<div class="page-header">
+    <h1>
+        Settings
+    </h1>
+</div>
+<ul class="nav nav-tabs nav-justified">
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps" class="active"><a href="#Apps" data-toggle="tab">Apps</a></li>
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Users"><a href="#Users" data-toggle="tab">Users</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane active" id="Apps">
+        @Html.Partial("AppSettings", Model.Apps)
+    </div>
+    <div class="tab-pane" id="Users">
+
+    </div>
+</div>

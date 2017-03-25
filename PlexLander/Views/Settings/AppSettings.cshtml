@@ -1,0 +1,10 @@
+﻿@using PlexLander.Models
+@model ICollection<App>
+
+@if(Model.Count == 0)
+{
+    <text>
+        <h3>It seems you don't have any apps yet.</h3>
+        <p>Would you like to add some?</p>
+    </text>
+}
