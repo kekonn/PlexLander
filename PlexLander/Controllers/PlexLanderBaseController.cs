@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using PlexLander.Configuration;
 using PlexLander.Data;
 using PlexLander.ViewModels;
+using System;
 
 namespace PlexLander.Controllers
 {
@@ -31,9 +32,9 @@ namespace PlexLander.Controllers
         {
             var controller = context.Controller as PlexLanderBaseController;
 
-            if (controller != null && (context.Controller as PlexLanderBaseController).ViewData.Model == null)
+            if (controller != null && controller.ViewData.Model == null)
             {
-                controller.ViewData.Model = new BasicViewModel(ServerName);
+               controller.ViewData.Model = new BasicViewModel(ServerName);
             }
             base.OnActionExecuted(context);
         }
