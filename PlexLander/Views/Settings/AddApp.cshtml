@@ -1,0 +1,15 @@
+﻿@using PlexLander.Models
+@model App
+@using (Html.BeginForm("AddUser", "Settings", FormMethod.Post, null))
+{
+    var request = Context.Request;
+    @Html.ValidationSummary();
+
+    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Name" })
+    <div class="input-group">
+        <span class="input-group-addon" id="url-addon">@((request.IsHttps)?"https":"http")://@(request.Host.Host)/</span>
+        @Html.TextBoxFor(m => m.Url, new { @class = "form-control", placeholder = "Url" })
+    </div>
+    <button type="submit">Add App</button>
+
+}

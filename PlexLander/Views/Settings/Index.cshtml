@@ -12,9 +12,16 @@
 </ul>
 <div class="tab-content">
     <div class="tab-pane active" id="Apps">
-        @Html.Partial("AppSettings", Model.Apps)
-    </div>
-    <div class="tab-pane" id="Users">
+        @if (Model.Apps.Count == 0)
+        {
+            <text>
+            <h3>It seems you don't have any apps yet.</h3>
+            <p>Would you like to add some?</p>
+            </text>
+            @Html.Partial("AddApp", new App())
+        }
+        </div>
+        <div class="tab-pane" id="Users">
 
+        </div>
     </div>
-</div>
