@@ -35,3 +35,16 @@ textarea {
         display: none;
     }
 }
+
+tr.text-vertical-center > td {
+    vertical-align:middle;
+}
+
+.app-presenter > a {
+    text-align: center;
+}
+
+.app-presenter > a > img {
+    display:block;
+    margin:0 auto;
+}

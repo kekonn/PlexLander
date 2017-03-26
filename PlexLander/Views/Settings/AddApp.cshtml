@@ -1,15 +1,29 @@
 ﻿@using PlexLander.Models
 @model App
-@using (Html.BeginForm("AddUser", "Settings", FormMethod.Post, null))
+@using (Html.BeginForm("AddApp", "Settings", FormMethod.Post, new { @class = "form-inline" }))
 {
     var request = Context.Request;
-    @Html.ValidationSummary();
-
-    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Name" })
-    <div class="input-group">
-        <span class="input-group-addon" id="url-addon">@((request.IsHttps)?"https":"http")://@(request.Host.Host)/</span>
-        @Html.TextBoxFor(m => m.Url, new { @class = "form-control", placeholder = "Url" })
+    <div class="form-group">
+        @Html.ValidationSummary()
     </div>
-    <button type="submit">Add App</button>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Url, new { @class = "sr-only" })
+        @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Name" })
+    </div>
+    <div class="form-group">
+        <div class="input-group">
+            @Html.LabelFor(m => m.Url, new { @class = "sr-only"})
+            <span class="input-group-addon" id="url-addon">@((request.IsHttps) ? "https" : "http")://@(request.Host.Host)</span>
+            @Html.TextBoxFor(m => m.Url, new { @class = "form-control", placeholder = "/Url" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="input-group">
+            @Html.LabelFor(m => m.Icon, new { @class = "sr-only"})
+            <span class="input-group-addon" id="icon-addon">@((request.IsHttps) ? "https" : "http")://@(request.Host.Host)/images/</span>
+            @Html.TextBoxFor(m => m.Icon, new { @class="form-control", placeholder = "Icon" })
+        </div>
+    </div>
+    <button class="btn btn-default btn-success" type="submit"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> App</button>
 
 }

@@ -1,0 +1,13 @@
+﻿@using PlexLander.Models
+@model PlexLander.Models.App
+<tr class="text-vertical-center">
+    <td>@Model.Name</td>
+    <td><a href="@Model.Url">@Model.Url</a></td>
+    <td>
+        <img src="/images/@Model.Icon" alt="@Model.Icon" height="25" width="25" /><br />
+    </td>
+    <td>
+        <button type="button" class="btn btn-default">Edit</button>
+        <button type="button" class="btn btn-danger">Delete</button>
+    </td>
+</tr>

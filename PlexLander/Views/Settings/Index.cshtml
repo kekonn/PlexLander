@@ -7,21 +7,42 @@
     </h1>
 </div>
 <ul class="nav nav-tabs nav-justified">
-    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps"><a href="#Apps" data-toggle="tab">Apps</a></li>
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps" class="active"><a href="#Apps" data-toggle="tab">Apps</a></li>
     <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Users"><a href="#Users" data-toggle="tab">Users</a></li>
 </ul>
 <div class="tab-content">
-    <div class="tab-pane" id="Apps">
+    <div class="tab-pane active" id="Apps">
         @if (Model.Apps.Count == 0)
         {
             <text>
             <h3>It seems you don't have any apps yet.</h3>
             <p>Would you like to add some?</p>
             </text>
-            @Html.Partial("AddApp", new App())
         }
-        </div>
-        <div class="tab-pane" id="Users">
-
-        </div>
+        else
+        {
+            <text>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Url</td>
+                        <td>Icon</td>
+                        <td>Modify</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var app in Model.Apps)
+                    {
+                       @Html.Partial("_AppRow",app)
+                    }
+                </tbody>
+            </table>
+            </text>
+        }
+        @Html.Partial("AddApp", new App())
     </div>
+    <div class="tab-pane" id="Users">
+
+    </div>
+</div>
