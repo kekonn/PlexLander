@@ -7,11 +7,11 @@
     </h1>
 </div>
 <ul class="nav nav-tabs nav-justified">
-    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps" class="active"><a href="#Apps" data-toggle="tab">Apps</a></li>
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps"><a href="#Apps" data-toggle="tab">Apps</a></li>
     <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Users"><a href="#Users" data-toggle="tab">Users</a></li>
 </ul>
 <div class="tab-content">
-    <div class="tab-pane active" id="Apps">
+    <div class="tab-pane" id="Apps">
         @if (Model.Apps.Count == 0)
         {
             <text>
