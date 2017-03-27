@@ -59,5 +59,13 @@ namespace PlexLander.Controllers
             }
             return PartialView("AddApp", newApp);
         }
+
+        public async Task<IActionResult> DeleteApp(int Id)
+        {
+            try
+            {
+
+            }
+        }
     }
 }
