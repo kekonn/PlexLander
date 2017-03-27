@@ -48,3 +48,8 @@ tr.text-vertical-center > td {
     display:block;
     margin:0 auto;
 }
+
+span.edit {
+    display:none;
+    visibility:collapse;
+}
