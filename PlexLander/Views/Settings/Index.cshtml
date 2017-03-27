@@ -41,6 +41,23 @@
             </text>
         }
         @Html.Partial("AddApp", new App())
+        <div id="modalDeleteConfirmation" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Are you sure?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the app?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-danger" id="deleteButton"><span class="glyphicon glyphicon-trash"></span>Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="tab-pane" id="Users">
 

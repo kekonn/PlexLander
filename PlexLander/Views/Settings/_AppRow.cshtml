@@ -8,6 +8,6 @@
     </td>
     <td>
         <button type="button" class="btn btn-default">Edit</button>
-        <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("DeleteApp","Settings", new { Id = Model.Id })'">Delete</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete('@Url.Action("DeleteApp","Settings", new { Id = Model.Id })','#modalDeleteConfirmation');">Delete</button>
     </td>
 </tr>

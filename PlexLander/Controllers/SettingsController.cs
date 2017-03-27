@@ -55,17 +55,29 @@ namespace PlexLander.Controllers
             }
             catch (DbUpdateException)
             {
+                //TODO logging
                 ModelState.AddModelError("", "Unable to save changes. If the problem persists, please contact your administrator.");
             }
             return PartialView("AddApp", newApp);
         }
 
-        public async Task<IActionResult> DeleteApp(int Id)
+        public async Task<IActionResult> DeleteApp(int id)
         {
             try
             {
-
+                App appToDelete = await Context.Apps.Where(a => a.Id == id).SingleOrDefaultAsync();
+                if (appToDelete != null)
+                {
+                    Context.Remove(appToDelete);
+                    await Context.SaveChangesAsync();
+                }
+            } catch(DbUpdateException)
+            {
+                //TODO logging
+                ModelState.AddModelError("", "Unable to save changes. If the problem persists, please contact your administrator.");
             }
+
+            return RedirectToAction("Index");
         }
     }
 }
