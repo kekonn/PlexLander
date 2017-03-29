@@ -38,7 +38,7 @@ namespace PlexLander.Controllers
         //POST: /Settings/AddApp
         [HttpPost()]
         [ValidateAntiForgeryToken()]
-        public async Task<IActionResult> AddApp(App newApp)
+        public async Task<IActionResult> AddApp([Bind("Name","Icon","Url")]App newApp)
         {
             try
             {

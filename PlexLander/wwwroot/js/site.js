@@ -4,19 +4,18 @@
     });
     $(modalElement).modal("show");
     return false;
-};
+}
 
 function editApp(appId, editButton) {
-    var viewClass = ".view-app-" + appId;
-    var editClass = ".edit-app-" + appId;
-    $(viewClass).fadeOut("fast");
-    $(editClass).fadeIn("fast");
-};
+    var viewClass = ".view-id-" + appId;
+    var editClass = ".edit-id-" + appId;
+    $(viewClass).css('visibility','collapse').hide();
+    $(editClass).css('visibility','visible').show();
+}
 
 function cancelEditApp(appId) {
-    var viewClass = ".view-app-" + appId;
-    var editClass = ".edit-app-" + appId;
-    $(editClass).fadeOut("fast");
-    //TODO clean up input fields
-    $(viewClass).fadeIn("fast");
-};
+    var viewClass = ".view-id-" + appId;
+    var editClass = ".edit-id-" + appId;
+    $(viewClass).css('visibility', 'initial').show();
+    $(editClass).css('visibility', 'initial').hide();
+}

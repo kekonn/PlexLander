@@ -36,7 +36,7 @@ textarea {
     }
 }
 
-tr.text-vertical-center > td {
+.text-vertical-center > td {
     vertical-align:middle;
 }
 
@@ -49,7 +49,7 @@ tr.text-vertical-center > td {
     margin:0 auto;
 }
 
-span.edit {
+.edit {
     display:none;
     visibility:collapse;
 }
