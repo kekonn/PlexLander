@@ -19,3 +19,18 @@ function cancelEditApp(appId) {
     $(viewClass).css('visibility', 'initial').show();
     $(editClass).css('visibility', 'initial').hide();
 }
+
+function SaveApp(appId) {
+    //warning!! this relies heavily on the format of the page and any change to the structue of the html can break this.
+    var editClass = ".edit-id-" + appId;
+    var inputFields = $(editClass + '> input');
+    var appObj = new Object();
+    inputFields.each(function () {
+        var name = $(this).attr('name');
+        var val = $(this).attr('value');
+        appObj[name] = val;
+    });
+    $.post("/Settings/SaveApp", appObj, function (result) {
+
+    });
+}

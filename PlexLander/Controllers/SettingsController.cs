@@ -61,6 +61,18 @@ namespace PlexLander.Controllers
             return PartialView("AddApp", newApp);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveApp([Bind("Name","Url","Image")]App app)
+        {
+            try
+            {
+
+            } catch (DbUpdateException)
+            {
+
+            }
+        }
+
         public async Task<IActionResult> DeleteApp(int id)
         {
             try
