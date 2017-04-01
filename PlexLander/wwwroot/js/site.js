@@ -31,6 +31,8 @@ function SaveApp(appId) {
         appObj[name] = val;
     });
     $.post("/Settings/SaveApp", appObj, function (result) {
-
+        if (result.Success == true) {
+            //TODO turn off the editing, update the view and show the right message
+        }
     });
 }

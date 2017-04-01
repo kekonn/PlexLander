@@ -16,8 +16,6 @@ namespace PlexLander.Controllers
 {
     public class SettingsController : PlexLanderBaseController
     {
-        private const string ControllerName = "Settings";
-
         protected IQueryable<App> NonTrackingApps
         {
             get
@@ -62,15 +60,22 @@ namespace PlexLander.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveApp([Bind("Name","Url","Image")]App app)
+        public async Task<IActionResult> SaveApp([Bind("Id","Name","Url","Image")]App app)
         {
             try
             {
-
+                if (ModelState.IsValid)
+                {
+                    Context.Update(app);
+                    await Context.SaveChangesAsync();
+                    return Json(new AddAppResultViewModel() { Success = true });
+                }
             } catch (DbUpdateException)
             {
-
+                return Json(new AddAppResultViewModel() { Success = false, ErrorMessage="fail" });
             }
+
+            return Json(new AddAppResultViewModel() { Success = false, ErrorMessage = "fail" });
         }
 
         public async Task<IActionResult> DeleteApp(int id)
