@@ -30,7 +30,7 @@ namespace PlexLander.Controllers
         // GET: /Settings/
         public async Task<IActionResult> Index()
         {
-            return View(new SettingsIndexViewModel(ServerName) { ActiveControllerName = ControllerName, Apps = await Context.Apps.ToListAsync() });
+            return View(new SettingsIndexViewModel(ServerName) {Apps = await Context.Apps.ToListAsync() });
         }
 
         //POST: /Settings/AddApp
@@ -60,7 +60,7 @@ namespace PlexLander.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveApp([Bind("Id","Name","Url","Image")]App app)
+        public async Task<IActionResult> SaveApp([Bind("Id","Name","Url","Icon")]App app)
         {
             try
             {
@@ -68,14 +68,14 @@ namespace PlexLander.Controllers
                 {
                     Context.Update(app);
                     await Context.SaveChangesAsync();
-                    return Json(new AddAppResultViewModel() { Success = true });
+                    return PartialView("_AppRow", app);
                 }
             } catch (DbUpdateException)
             {
-                return Json(new AddAppResultViewModel() { Success = false, ErrorMessage="fail" });
+                return Json(new { ErrorMessage = "fail" });
             }
 
-            return Json(new AddAppResultViewModel() { Success = false, ErrorMessage = "fail" });
+            return Json(new { ErrorMessage = "fail" });
         }
 
         public async Task<IActionResult> DeleteApp(int id)

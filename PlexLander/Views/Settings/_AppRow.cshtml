@@ -4,7 +4,7 @@
     int modelId = Model.Id;
     var request = Context.Request;
 }
-<tr class="text-vertical-center">
+<tr class="text-vertical-center" id="app-@Model.Id">
     <td>
         <span class="view view-id-@modelId">@Model.Name</span>
         <span class="edit edit-id-@modelId">
@@ -27,7 +27,7 @@
     </td>
     <td>
         <span class="edit edit-id-@modelId">
-            <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save</button>
+            <button type="button" class="btn btn-success" onclick="saveApp(@modelId)"><span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save</button>
             <button type="button" class="btn btn-warning" onclick="cancelEditApp(@modelId);"><span class="glyphicon glyphicon-floppy-remove" aria-hidden="true"></span> Cancel</button>
         </span>
         <span class="view view-id-@modelId">

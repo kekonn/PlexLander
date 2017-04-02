@@ -14,25 +14,30 @@ function editApp(appId, editButton) {
 }
 
 function cancelEditApp(appId) {
-    var viewClass = ".view-id-" + appId;
-    var editClass = ".edit-id-" + appId;
+    var viewClass = '.view-id-' + appId;
+    var editClass = '.edit-id-' + appId;
     $(viewClass).css('visibility', 'initial').show();
     $(editClass).css('visibility', 'initial').hide();
 }
 
-function SaveApp(appId) {
+function saveApp(appId) {
     //warning!! this relies heavily on the format of the page and any change to the structue of the html can break this.
-    var editClass = ".edit-id-" + appId;
+    var editClass = '.edit-id-' + appId;
     var inputFields = $(editClass + '> input');
     var appObj = new Object();
     inputFields.each(function () {
         var name = $(this).attr('name');
-        var val = $(this).attr('value');
+        var val = $(this).val();
         appObj[name] = val;
     });
-    $.post("/Settings/SaveApp", appObj, function (result) {
-        if (result.Success == true) {
-            //TODO turn off the editing, update the view and show the right message
+    appObj['Id'] = appId;
+    $.post('/Settings/SaveApp', appObj, function (result) {
+        if (Object.prototype.hasOwnProperty.call(result, 'ErrorMessage')) {
+            //something went wrong
+            $.notify(result.ErrorMessage, 'error');
+        } else {
+            $('tr#app-' + appId).replaceWith(result);
+            $.notify('Save successful', 'success');
         }
     });
 }
