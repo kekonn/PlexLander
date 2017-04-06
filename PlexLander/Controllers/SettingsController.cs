@@ -16,27 +16,23 @@ namespace PlexLander.Controllers
 {
     public class SettingsController : PlexLanderBaseController
     {
-        protected IQueryable<App> NonTrackingApps
+        private readonly IAppRepository _appRepo;
+
+        public SettingsController(IAppRepository appRepo, IOptions<ServerConfiguration> config) : base(config)
         {
-            get
-            {
-                return Context.Apps.AsNoTracking();
-            }
+            _appRepo = appRepo;
         }
 
-        public SettingsController(PlexLanderContext context, IOptions<ServerConfiguration> config) : base(context,config)
-        { }
-
         // GET: /Settings/
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(new SettingsIndexViewModel(ServerName) {Apps = await Context.Apps.ToListAsync() });
+            return View(new SettingsIndexViewModel(ServerName) { Apps = _appRepo.ListAll() });
         }
 
         //POST: /Settings/AddApp
         [HttpPost()]
         [ValidateAntiForgeryToken()]
-        public async Task<IActionResult> AddApp([Bind("Name","Icon","Url")]App newApp)
+        public IActionResult AddApp([Bind("Name","Icon","Url")]App newApp)
         {
             try
             {
@@ -46,8 +42,7 @@ namespace PlexLander.Controllers
                     {
                         newApp.Url = String.Format("/{0}", newApp.Url);
                     }
-                    Context.Add(newApp);
-                    await Context.SaveChangesAsync();
+                    _appRepo.Add(newApp);
                     return RedirectToAction("Index");
                 }
             }
@@ -60,14 +55,13 @@ namespace PlexLander.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveApp([Bind("Id","Name","Url","Icon")]App app)
+        public IActionResult SaveApp([Bind("Id","Name","Url","Icon")]App app)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    Context.Update(app);
-                    await Context.SaveChangesAsync();
+                    _appRepo.Update(app);
                     return PartialView("_AppRow", app);
                 }
             } catch (DbUpdateException)
@@ -78,16 +72,11 @@ namespace PlexLander.Controllers
             return Json(new { ErrorMessage = "fail" });
         }
 
-        public async Task<IActionResult> DeleteApp(int id)
+        public IActionResult DeleteApp(int id)
         {
             try
             {
-                App appToDelete = await Context.Apps.Where(a => a.Id == id).SingleOrDefaultAsync();
-                if (appToDelete != null)
-                {
-                    Context.Remove(appToDelete);
-                    await Context.SaveChangesAsync();
-                }
+                _appRepo.Remove(id);
             } catch(DbUpdateException)
             {
                 //TODO logging

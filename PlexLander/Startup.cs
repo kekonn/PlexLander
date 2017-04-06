@@ -34,6 +34,7 @@ namespace PlexLander
             services.AddMvc();
             //Configure server
             services.Configure<ServerConfiguration>(config => config.ServerName = Configuration.GetSection("ServerConfiguration").GetValue("ServerName","PlexLander"));
+            services.AddRepositories();
             //Add EFCore
             services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             

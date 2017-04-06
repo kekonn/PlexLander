@@ -13,13 +13,16 @@ namespace PlexLander.Controllers
 {
     public class LandingController : PlexLanderBaseController
     {
-        public LandingController(PlexLanderContext context, IOptions<ServerConfiguration> config) : base(context, config)
+        private readonly IAppRepository _appRepo;
+
+        public LandingController(IAppRepository appRepo, IOptions<ServerConfiguration> config) : base(config)
         {
+            _appRepo = appRepo;
         }
 
         public IActionResult Index()
         {
-            return View(new LandingViewModel(this.ServerName) { AppList = new List<App>(Context.Apps.AsEnumerable())});
+            return View(new LandingViewModel(this.ServerName) { AppList = new List<App>(_appRepo.ListAll())});
         }
 
 

@@ -8,7 +8,7 @@ namespace PlexLander.ViewModels.Settings
 {
     public class SettingsIndexViewModel : ViewModelBase
     {
-        public ICollection<App> Apps { get; set; }
+        public IEnumerable<App> Apps { get; set; }
 
         public SettingsIndexViewModel(string serverName) : base(serverName)
         {
