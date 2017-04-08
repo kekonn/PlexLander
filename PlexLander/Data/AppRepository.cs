@@ -26,25 +26,25 @@ namespace PlexLander.Data
             return _context.Apps.AsNoTracking();
         }
 
-        public async void Remove(App app)
+        public void Remove(App app)
         {
             _context.Remove(app);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async void Remove(int id)
+        public void Remove(int id)
         {
-            App haveApp = await _context.Apps.Where(a => a.Id == id).SingleOrDefaultAsync();
+            App haveApp = _context.Apps.Where(a => a.Id == id).SingleOrDefault();
             if (haveApp != null)
             {
                 Remove(haveApp);
             }
         }
 
-        public async void Update(App app)
+        public void Update(App app)
         {
             _context.Update(app);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
     }
 }
