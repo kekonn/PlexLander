@@ -16,6 +16,7 @@ namespace PlexLander.Configuration
         public string PlexIcon { get; set; }
         //whatsnewsettings
         public bool EnableWhatsNew { get; set; } = false;
+        public string WhatsNewIcon { get; set; }
         //Radarr settings
         public bool EnableRadarr { get; set; } = false;
         public string RadarrEndpoint { get; set; }
