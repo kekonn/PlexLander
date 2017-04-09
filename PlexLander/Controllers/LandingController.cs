@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using PlexLander.ViewModels.Landing;
+﻿using PlexLander.ViewModels.Landing;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using PlexLander.Data;
-using PlexLander.Models;
 using PlexLander.Configuration;
+using PlexLander.ViewModels;
 
 namespace PlexLander.Controllers
 {
     public class LandingController : PlexLanderBaseController
     {
-        private readonly PlexLanderContext _context;
+        private readonly IAppRepository _appRepo;
 
-        public LandingController(PlexLanderContext context, IOptions<ServerConfiguration> config) : base(config)
+        public LandingController(IAppRepository appRepo, ConfigurationManager configManager) : base(configManager)
         {
-            _context = context;
+            _appRepo = appRepo;
         }
 
         public IActionResult Index()
         {
-            return View(new LandingViewModel() { AppList = new List<App>(_context.Apps.AsEnumerable()), ServerName = this.ServerName });
+            return View(new LandingViewModel(this.ServerName) { AppList = AppViewModelFactory.FromApps(userApps:_appRepo.ListAll(),builtInApps:ConfigManager.ListAll())});
         }
 
 
