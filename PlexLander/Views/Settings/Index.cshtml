@@ -1,0 +1,69 @@
+@using PlexLander.Models
+@using PlexLander.ViewModels.Settings
+@model SettingsIndexViewModel
+<div class="page-header">
+    <h1>
+        Settings
+    </h1>
+</div>
+<ul class="nav nav-tabs nav-justified">
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Servers" class="active"><a href="#Servers" data-toggle="tab">Servers</a></li>
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Apps"><a href="#Apps" data-toggle="tab">Apps</a></li>
+    <li role="presentation" bs-controller="Settings" bs-action="Index" bs-area="Users"><a href="#Users" data-toggle="tab">Users</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane active" id="Servers">
+
+    </div>
+    <div class="tab-pane active" id="Apps">
+        @if (Model.Apps.Count() == 0)
+        {
+            <text>
+            <h3>It seems you don't have any apps yet.</h3>
+            <p>Would you like to add some?</p>
+            </text>
+        }
+        else
+        {
+            <text>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Url</td>
+                        <td>Icon</td>
+                        <td>Modify</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var app in Model.Apps)
+                    {
+                       @Html.Partial("_AppRow",app)
+                    }
+                </tbody>
+            </table>
+            </text>
+        }
+        @Html.Partial("AddApp", new App())
+        <div id="modalDeleteConfirmation" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Are you sure?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the app?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-danger" id="deleteButton"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane" id="Users">
+
+    </div>
+</div>
