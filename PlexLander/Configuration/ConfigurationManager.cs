@@ -19,6 +19,7 @@ namespace PlexLander.Configuration
         private BuiltInApp _plexApp;
         private BuiltInApp _radarrApp;
         private BuiltInApp _sonarrApp;
+        private BuiltInApp _whatsNewApp;
 
         public ConfigurationManager(IOptions<ServerConfiguration> config)
         {
@@ -37,14 +38,23 @@ namespace PlexLander.Configuration
             {
                 _plexApp = new BuiltInApp("Plex", config.PlexIcon, config.PlexUrl, config.PlexEndpoint, config.PlexToken,-1);
             }
+
+            if (IsWhatsNewEnabled)
+            {
+                _whatsNewApp = new BuiltInApp("What's New", config.WhatsNewIcon, "/WhatsNew",id:-2);
+            }
         }
 
         public IEnumerable<BuiltInApp> ListAll()
         {
-            var appList = new List<BuiltInApp>(3);
+            var appList = new List<BuiltInApp>(4);
             if (_plexApp != null)
             {
                 appList.Add(_plexApp);
+            }
+            if (_whatsNewApp != null)
+            {
+                appList.Add(_whatsNewApp);
             }
 
             appList.Sort(new BuiltInAppIdComparer());
