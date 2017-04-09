@@ -34,10 +34,10 @@ namespace PlexLander
             services.AddMvc();
             //Configure server
             services.Configure<ServerConfiguration>(Configuration.GetSection("ServerConfiguration"));
-            services.AddRepositories();
             //Add EFCore
             services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            
+            services.AddSingleton<ConfigurationManager>();
+            services.AddRepositories();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

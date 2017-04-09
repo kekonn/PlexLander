@@ -18,7 +18,7 @@ namespace PlexLander.Controllers
     {
         private readonly IAppRepository _appRepo;
 
-        public SettingsController(IAppRepository appRepo, IOptions<ServerConfiguration> config) : base(config)
+        public SettingsController(IAppRepository appRepo, ConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
         }

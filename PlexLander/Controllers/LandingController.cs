@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using PlexLander.ViewModels.Landing;
+﻿using PlexLander.ViewModels.Landing;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using PlexLander.Data;
-using PlexLander.Models;
 using PlexLander.Configuration;
+using PlexLander.ViewModels;
 
 namespace PlexLander.Controllers
 {
@@ -15,14 +10,14 @@ namespace PlexLander.Controllers
     {
         private readonly IAppRepository _appRepo;
 
-        public LandingController(IAppRepository appRepo, IOptions<ServerConfiguration> config) : base(config)
+        public LandingController(IAppRepository appRepo, ConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
         }
 
         public IActionResult Index()
         {
-            return View(new LandingViewModel(this.ServerName) { AppList = new List<App>(_appRepo.ListAll())});
+            return View(new LandingViewModel(this.ServerName) { AppList = AppViewModelFactory.FromApps(userApps:_appRepo.ListAll(),builtInApps:ConfigManager.ListAll())});
         }
 
 

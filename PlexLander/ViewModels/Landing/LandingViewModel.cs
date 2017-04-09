@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PlexLander.Models;
 
 namespace PlexLander.ViewModels.Landing
 {
@@ -12,6 +11,7 @@ namespace PlexLander.ViewModels.Landing
         {
         }
 
-        public ICollection<App> AppList { get; set; }
+        public IEnumerable<AppViewModel> AppList { get; set; }
+        
     }
 }

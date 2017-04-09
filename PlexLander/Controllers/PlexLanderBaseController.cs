@@ -10,11 +10,18 @@ namespace PlexLander.Controllers
 {
     public abstract class PlexLanderBaseController : Controller
     {
-        protected string ServerName { get; private set; }
+        private readonly ConfigurationManager _configManager;
+        protected ConfigurationManager ConfigManager => _configManager;
+        protected string ServerName {
+            get
+            {
+                return _configManager.ServerName;
+            }
+        }
         
-        public PlexLanderBaseController(IOptions<ServerConfiguration> config) : base()
+        public PlexLanderBaseController(ConfigurationManager configManager) : base()
         {
-            ServerName = config.Value.ServerName;
+            _configManager = configManager;
         }
 
         public override void OnActionExecuted(ActionExecutedContext context)
