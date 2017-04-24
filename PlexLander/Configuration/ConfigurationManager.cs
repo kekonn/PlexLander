@@ -21,7 +21,8 @@ namespace PlexLander.Configuration
         string ApplicationVersion { get; }
         string ApplicationName { get; }
         string DeviceName { get; }
-
+        string PlatformName { get; }
+        string PlatformVersion { get; }
 
         //methods
         IEnumerable<BuiltInApp> ListAll();
@@ -64,6 +65,20 @@ namespace PlexLander.Configuration
             get
             {
                 return "PlexLanderServer"; //TODO: detect actual "device" name
+            }
+        }
+        public string PlatformName
+        {
+            get
+            {
+                return System.Runtime.InteropServices.RuntimeInformation.OSDescription;
+            }
+        }
+        public string PlatformVersion
+        {
+            get
+            {
+                return System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion();
             }
         }
 
