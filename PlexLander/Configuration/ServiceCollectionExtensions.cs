@@ -12,5 +12,10 @@ namespace PlexLander.Configuration
         {
             return services.AddScoped<Data.IAppRepository, Data.AppRepository>();
         }
+
+        public static IServiceCollection AddServers(this IServiceCollection services)
+        {
+            return services.AddScoped<Plex.IPlexServer, Plex.PlexServer>();
+        }
     }
 }

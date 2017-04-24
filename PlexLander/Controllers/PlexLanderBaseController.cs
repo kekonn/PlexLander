@@ -10,8 +10,8 @@ namespace PlexLander.Controllers
 {
     public abstract class PlexLanderBaseController : Controller
     {
-        private readonly ConfigurationManager _configManager;
-        protected ConfigurationManager ConfigManager => _configManager;
+        private readonly IConfigurationManager _configManager;
+        protected IConfigurationManager ConfigManager => _configManager;
         protected string ServerName {
             get
             {
@@ -19,7 +19,7 @@ namespace PlexLander.Controllers
             }
         }
         
-        public PlexLanderBaseController(ConfigurationManager configManager) : base()
+        public PlexLanderBaseController(IConfigurationManager configManager) : base()
         {
             _configManager = configManager;
         }
