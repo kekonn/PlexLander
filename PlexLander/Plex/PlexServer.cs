@@ -14,7 +14,7 @@ namespace PlexLander.Plex
 {
     public interface IPlexServer : IDisposable
     {
-        
+        Task<LoginResult> Login(string username, string password);
     }
 
     public class PlexServer : IPlexServer
@@ -33,7 +33,7 @@ namespace PlexLander.Plex
 
         #region Login constants
         private const string PLEX_LOGIN_BASE = "https://plex.tv/";
-        private const string PLEX_LOGIN_ENDPOINT = "users/sign_in.json";
+        private const string PLEX_LOGIN_ENDPOINT = "users/sign_in.xml";
         private const string PLEX_LOGIN_USER_NAME = "user[name]";
         private const string PLEX_LOGIN_USER_PASSWORD = "user[password]";
         #endregion
@@ -74,7 +74,7 @@ namespace PlexLander.Plex
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, configManager.PlatformName);
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, configManager.PlatformVersion);
         }
-        
+
         /// <summary>
         /// Sets the headers that do the paging
         /// </summary>
@@ -89,7 +89,7 @@ namespace PlexLander.Plex
         }
 
         #region Login
-        private async bool Login(string userName, string password)
+        public async Task<LoginResult> Login(string userName, string password)
         {
             //HttpClient setup
             var loginClient = new HttpClient();
@@ -110,9 +110,14 @@ namespace PlexLander.Plex
                 content = response.Content;
                 var document = XDocument.Parse(await content.ReadAsStringAsync());
                 //TODO: finish parsing the XML
+
+                return new LoginResult { Succes = true };
+            }
+            else
+            {
+                return new LoginResult { Succes = false, Error = response.StatusCode.ToString() };
             }
 
-            throw new NotImplementedException();
         }
         #endregion
 
@@ -122,7 +127,7 @@ namespace PlexLander.Plex
         /// <returns></returns>
         private string GetClientIdentifier()
         {
-            string salt = String.Format("{0}-{1}-{2}",configManager.ApplicationName,configManager.ApplicationVersion,configManager.DeviceName);
+            string salt = String.Format("{0}-{1}-{2}", configManager.ApplicationName, configManager.ApplicationVersion, configManager.DeviceName);
             byte[] saltyBytes = Encoding.UTF8.GetBytes(salt);
             byte[] clientIdentifierBytes;
             using (var sha512 = new SHA512Managed())
@@ -150,7 +155,7 @@ namespace PlexLander.Plex
                         client.Dispose();
                     }
                 }
-                
+
                 // TODO: set large fields to null.
 
                 disposedValue = true;
@@ -161,7 +166,15 @@ namespace PlexLander.Plex
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);        }
+            Dispose(true);
+        }
         #endregion
+    }
+
+    public class LoginResult
+    {
+        public string Token { get; set; }
+        public bool Succes { get; set; }
+        public string Error { get; set; }
     }
 }

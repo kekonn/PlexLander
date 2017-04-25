@@ -14,6 +14,7 @@ using System;
 
 namespace PlexLander.Controllers
 {
+    [RequireHttps]
     public class SettingsController : PlexLanderBaseController
     {
         private readonly IAppRepository _appRepo;
@@ -72,6 +73,7 @@ namespace PlexLander.Controllers
             return Json(new { ErrorMessage = "fail" });
         }
 
+        [HttpDelete]
         public IActionResult DeleteApp(int id)
         {
             try

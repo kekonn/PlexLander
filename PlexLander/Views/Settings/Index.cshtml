@@ -13,9 +13,23 @@
 </ul>
 <div class="tab-content">
     <div class="tab-pane active" id="Servers">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3>Plex</h3>
+            </div>
+            <div class="panel-body">
+                @using (Html.BeginForm("SavePlexServerSettings", "Settings", FormMethod.Post, new { @class = "form-inline" }))
+                {
+                    @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)
+                    @Html.CheckBoxFor(m => m.PlexServerSettingsViewModel.IsEnabled)
+                    @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)
+                    @Html.TextBoxFor(m => m.PlexServerSettingsViewModel.Token)
 
-    </div>
-    <div class="tab-pane active" id="Apps">
+                }
+            </div>
+        </div>
+    </div> <!-- servers tab-->
+    <div class="tab-pane" id="Apps">
         @if (Model.Apps.Count() == 0)
         {
             <text>
