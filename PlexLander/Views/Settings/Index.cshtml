@@ -22,10 +22,10 @@
                 {
                     @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)
                     @Html.CheckBoxFor(m => m.PlexServerSettingsViewModel.IsEnabled)
-                    @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)
-                    @Html.TextBoxFor(m => m.PlexServerSettingsViewModel.Token)
-
-                }
+                    
+                    @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>:</text>
+                    @Html.DisplayFor(m => m.PlexServerSettingsViewModel.Token)
+}
             </div>
         </div>
     </div> <!-- servers tab-->
