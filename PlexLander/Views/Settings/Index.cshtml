@@ -22,10 +22,13 @@
                 {
                     @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)
                     @Html.CheckBoxFor(m => m.PlexServerSettingsViewModel.IsEnabled)
-                    
-                    @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>:</text>
-                    @Html.DisplayFor(m => m.PlexServerSettingsViewModel.Token)
-}
+
+                    if (Model.PlexServerSettingsViewModel.IsEnabled)
+                    {
+                        @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
+                        @Html.DisplayFor(m => m.PlexServerSettingsViewModel.Token)
+                    }
+                }
             </div>
         </div>
     </div> <!-- servers tab-->
@@ -50,9 +53,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var app in Model.Apps)
+                    @foreach (var app in Model.Apps)
                     {
-                       @Html.Partial("_AppRow",app)
+                        @Html.Partial("_AppRow", app)
                     }
                 </tbody>
             </table>

@@ -33,8 +33,12 @@ namespace PlexLander.TagHelpers
         [HtmlAttributeName(ControllerAttributeName)]
         public string Controller { get; set; }
 
+        /// <summary>
+        /// The CSS class to set if the menu item is the current active menu item
+        /// </summary>
         [HtmlAttributeName(NavigationActiveClassAttributeName)]
         public string ActiveClass { get; set; }
+
 
         [HtmlAttributeName(AreaAttributeName)]
         public string Area { get; set; } = String.Empty;
@@ -81,7 +85,12 @@ namespace PlexLander.TagHelpers
             output.Content = content;
         }
 
-        private bool AreAreasEqual(string expectedArea)
+        /// <summary>
+        /// Check if the current anchor/area from the URL matches the given anchor/area
+        /// </summary>
+        /// <param name="expectedAnchor"></param>
+        /// <returns></returns>
+        private bool AreAreasEqual(string expectedAnchor)
         {
             PathString currentPath = ViewContext.HttpContext.Request.Path; //TODO: find better method, this does not actually include the area
             string area = String.Empty;
@@ -95,9 +104,13 @@ namespace PlexLander.TagHelpers
                 }
             }
 
-            return String.IsNullOrWhiteSpace(expectedArea); //no area defined an no area in current path
+            return String.IsNullOrWhiteSpace(expectedAnchor); //no area defined an no area in current path
         }
 
+        /// <summary>
+        /// Gets route values from attributes on the tag
+        /// </summary>
+        /// <returns>A RouteValueDictionary</returns>
         private RouteValueDictionary RouteValuesFromAttributes()
         {
             RouteValueDictionary dictionary = new RouteValueDictionary();
@@ -129,9 +142,9 @@ namespace PlexLander.TagHelpers
         /// <summary>
         /// Checks if two dictionaries have the same key and if so, if both keys .ToString()'s are equal
         /// </summary>
-        /// <param name="dictionaryA"></param>
-        /// <param name="dictionaryB"></param>
-        /// <param name="key"></param>
+        /// <param name="dictionaryA">The first RouteValueDictionary</param>
+        /// <param name="dictionaryB">The second RouteValueDictionary</param>
+        /// <param name="key">The key to check for</param>
         /// <returns>true if the dictionaries both give a key</returns>
         private bool DictionariesHaveMatchingKeys(RouteValueDictionary dictionaryA, RouteValueDictionary dictionaryB, string key)
         {
