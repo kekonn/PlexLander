@@ -8,7 +8,7 @@ function confirmDelete(urlToCall, modalElement) {
     $(modalElement).find('#deleteButton').on("click", function () {
         location.href = urlToCall;
     });
-    $(modalElement).modal("show");
+    showModal(modalElement);
     return false;
 }
 
@@ -36,7 +36,7 @@ function cancelEditApp(appId) {
 
 /**
  * Enables hiding a certain element if a toggle switch is untoggled
- * @param {any} switchName the name or jquery object of the switch
+ * @param {string} switchName the name of the input that is the switch
  * @param {string} followUpDiv the name of the div to hide
  */
 function disableWithToggle(switchName, followUpDiv) {
@@ -76,4 +76,20 @@ function saveApp(appId) {
             $.notify('Save successful', 'success');
         }
     });
+}
+
+/**
+ * Makes an out-of-form button submit the named form
+ * @param {string} formName the id of form
+ */
+function bindButtonToForm(formName) {
+    $('#'+formName).submit();
+}
+
+/**
+ * show a modal dialog
+ * @param {any} modalElement parameter for jquery object that points to the modal div
+ */
+function showModal(modalElement) {
+    $(modalElement).modal("show");
 }

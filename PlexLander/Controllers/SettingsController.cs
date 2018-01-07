@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
+using PlexLander.Plex;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,19 +19,21 @@ namespace PlexLander.Controllers
     public class SettingsController : PlexLanderBaseController
     {
         private readonly IAppRepository _appRepo;
+        private readonly IPlexService _plexService;
 
-        public SettingsController(IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
+        public SettingsController(IPlexService plexService, IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
+            _plexService = plexService;
         }
 
         // GET: /Settings/
-        public IActionResult Index()
+        public IActionResult Index(PlexAuthenticationResultViewModel plexLoginResult = null)
         {
             return View(new SettingsIndexViewModel(ServerName)
             {
                 Apps = _appRepo.ListAll(),
-                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel()
+                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(plexLoginResult)
             });
         }
 
@@ -86,6 +89,14 @@ namespace PlexLander.Controllers
             return Json(new { ErrorMessage = "fail" });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlexAuthentication(string username, string password)
+        {
+            var loginResult = await _plexService.Login(username, password);
+            return RedirectToAction("Index", new PlexAuthenticationResultViewModel() { Succes = loginResult.Succes, Error = loginResult.Error });
+        }
+
         [HttpDelete]
         public IActionResult DeleteApp(int id)
         {
@@ -102,12 +113,14 @@ namespace PlexLander.Controllers
             return RedirectToAction("Index");
         }
 
-        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel()
+        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel(PlexAuthenticationResultViewModel plexLoginResult)
         {
             return new PlexServerSettingsViewModel()
             {
                 IsEnabled = ConfigManager.IsPlexEnabled,
-                Token = ConfigManager.PlexApp.Token
+                Token = ConfigManager.PlexApp.Token,
+                HasAuthentication = _plexService.HasValidLogin,
+                AuthenticationResult = plexLoginResult
             };
         }
     }

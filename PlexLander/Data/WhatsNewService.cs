@@ -3,49 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PlexLander.Models;
+using PlexLander.Data;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace PlexLander.Data
 {
-    public interface IWhatsNewService : IDisposable
+    public interface IWhatsNewService
     {
     }
 
     public class WhatsNewService : IWhatsNewService
     {
-        private readonly Plex.IPlexService _plexServer;
+        private readonly Plex.IPlexService _plexService;
 
-        public WhatsNewService(Plex.IPlexService plexServer)
+        public WhatsNewService(Plex.IPlexService plexService)
         {
-            _plexServer = plexServer ?? throw new ArgumentNullException("plexServer");
+            _plexService = plexService ?? throw new ArgumentNullException("plexServer");
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        public IEnumerable<PlexServer> GetPlexServers()
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                    _plexServer.Dispose();
-                }
-                
-                disposedValue = true;
-            }
+            throw new NotImplementedException();
         }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
     }
 }

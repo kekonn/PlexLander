@@ -15,30 +15,35 @@
 <div class="tab-content">
     <div class="tab-pane active" id="Servers">
         <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3>Plex</h3>
-            </div>
-            <div class="panel-body">
-                @using (Html.BeginForm("SavePlexServerSettings", "Settings", FormMethod.Post))
-                {
-                    <div class="form-group">
-                        @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)
-                        @Html.ToggleSwitchFor(m => m.PlexServerSettingsViewModel.IsEnabled)
-                        <button type="submit"></button>
-                    </div>
-
-                    if (Model.PlexServerSettingsViewModel.IsEnabled)
-                    {
-                        <div class="form-group" id="plexsettings-followup">
-                            @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
-                            @Html.TextBoxFor(m => m.PlexServerSettingsViewModel.Token)
+            <!-- Plex server tab -->
+            @Html.Partial("_PlexServerSettings", Model)
+            <div id="modalPlexAuthentication" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Please enter your credentials</h4>
                         </div>
-                    }
-                }
+                        <div class="modal-body">
+                            @using (Html.BeginForm("PlexAuthentication", "Settings", FormMethod.Post, new { id="plex-auth-form" }))
+                            {
+                                <div class="form-group">
+                                    <input type="text" name="username" placeholder="Username" />
+                                    <input type="password" name="password" placeholder="Password" />
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" id="plexLoginButton" onclick="bindButtonToForm('plex-auth-form')"><span class="glyphicon glyphicon-log-in"></span> Log in</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div> <!-- servers tab-->
+    </div>
     <div class="tab-pane" id="Apps">
+        <!-- servers tab-->
         @if (Model.Apps.Count() == 0)
         {
             <text>
@@ -91,7 +96,18 @@
     </div>
 </div>
 @section Scripts {
-<script type="text/javascript">
+    <script type="text/javascript">
         disableWithToggle("@Html.NameFor(m => m.PlexServerSettingsViewModel.IsEnabled)", "plexsettings-followup");
-</script>
+        @if(Model.PlexServerSettingsViewModel.AuthenticationResult != null)
+        {
+            var loginResult = Model.PlexServerSettingsViewModel.AuthenticationResult;
+            if (loginResult.Succes)
+            {
+                <text>$.notify('Login successful!', 'succes');</text>
+            } else
+            {
+                <text>$.notify('Login failed. ' + '@loginResult.Error', 'error');</text>
+            }
+        }
+    </script>
 }

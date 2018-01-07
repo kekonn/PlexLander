@@ -12,9 +12,10 @@ using System.Security.Cryptography;
 
 namespace PlexLander.Plex
 {
-    public interface IPlexService : IDisposable
+    public interface IPlexService
     {
         Task<LoginResult> Login(string username, string password);
+        bool HasValidLogin { get; }
     }
 
     public class PlexService : IPlexService
@@ -29,8 +30,6 @@ namespace PlexLander.Plex
         private const string X_PLEX_PRODUCT_HEADER = "X-Plex-Product";
         private const string X_PLEX_VERSION_HEADER = "X-Plex-Version";
         private const string X_PLEX_DEVICE_HEADER = "X-Plex-Device";
-        private const string X_PLEX_CONTAINER_START_HEADER = "X-Plex-Container-Start";
-        private const string X_PLEX_CONTAINER_SIZE_HEADER = "X-Plex-Container-Size";
         #endregion
 
         #region Login constants
@@ -45,10 +44,22 @@ namespace PlexLander.Plex
         private const string PLEX_TV_ACCOUNT_ENDPOINT = "users/account.xml";
         private const string PLEX_TV_BASE = "https://plex.tv/";
         #endregion
-
-        private static HttpClient client;
+        
         private string apiEndpoint = "https://app.plex.tv/";
         private Configuration.IConfigurationManager configManager;
+        private Tuple<DateTime, LoginResult> lastLoginResult;
+
+        #region Properties
+        public bool HasValidLogin
+        {
+            get
+            {
+                return lastLoginResult != null
+                && (DateTime.Now - lastLoginResult.Item1).Days <= 10
+                && lastLoginResult.Item2.Succes == true;
+            }
+        }
+        #endregion
 
         public PlexService(Configuration.IConfigurationManager configManager)
         {
@@ -56,56 +67,54 @@ namespace PlexLander.Plex
 
             if (!configManager.IsPlexEnabled)
                 throw new ApplicationException("Please enable and configure Plex.");
-
-
-            if (client == null)
-            {
-                client = new HttpClient();
-            }
-
+            
             if (!string.IsNullOrEmpty(configManager.PlexApp.Endpoint))
             {
                 apiEndpoint = configManager.PlexApp.Endpoint;
             }
-
-            client.BaseAddress = new Uri(apiEndpoint);
-            SetupRequestHeaders(configManager);
+            
         }
 
-        private void SetupRequestHeaders(Configuration.IConfigurationManager configManager)
+        private HttpClient GetPlexClient(string baseAddress)
         {
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            string endpoint;
+            if (string.IsNullOrWhiteSpace(baseAddress) && !string.IsNullOrWhiteSpace(apiEndpoint))
+            {
+                endpoint = apiEndpoint;
+            } else if (!string.IsNullOrWhiteSpace(baseAddress))
+            {
+                endpoint = baseAddress;
+            } else
+                throw new InvalidOperationException("No endpoint is defined. Set the default endpoint or pass an endpoint as a parameter.");
+
+            var client = new HttpClient()
+            {
+                BaseAddress = new Uri(endpoint)
+            };
+
+            //set all the default headers
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
             client.DefaultRequestHeaders.Add(X_PLEX_PRODUCT_HEADER, configManager.ApplicationName);
             client.DefaultRequestHeaders.Add(X_PLEX_VERSION_HEADER, configManager.ApplicationVersion);
             client.DefaultRequestHeaders.Add(X_PLEX_DEVICE_HEADER, configManager.DeviceName);
             client.DefaultRequestHeaders.Add(X_PLEX_CLIENT_IDENTIFIER_HEADER, GetClientIdentifier());
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, configManager.PlatformName);
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, configManager.PlatformVersion);
-        }
 
-        /// <summary>
-        /// Sets the headers that do the paging
-        /// </summary>
-        /// <param name="start">at what item the page should start</param>
-        /// <param name="count">the amount of items to return (or less if less are available)</param>
-        private void SetPlexPage(int start, int count = 10)
-        {
-            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_SIZE_HEADER);
-            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_START_HEADER);
-            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_START_HEADER, start.ToString());
-            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_SIZE_HEADER, count.ToString());
+            return client;
         }
 
         #region Login
         public async Task<LoginResult> Login(string userName, string password)
         {
+            if (HasValidLogin) //we can always change this timeout later, for now it is hardcoded
+            {
+                // we've already logged on succesfully in the last 10 days
+                return lastLoginResult.Item2;
+            }
             //HttpClient setup
-            var loginClient = new HttpClient();
+            var loginClient = GetPlexClient(PLEX_LOGIN_BASE);
             loginClient.BaseAddress = new Uri(PLEX_LOGIN_BASE);
-            loginClient.DefaultRequestHeaders.Add(X_PLEX_CLIENT_IDENTIFIER_HEADER, GetClientIdentifier());
-            loginClient.DefaultRequestHeaders.Add(X_PLEX_PRODUCT_HEADER, configManager.ApplicationName);
-            loginClient.DefaultRequestHeaders.Add(X_PLEX_VERSION_HEADER, configManager.ApplicationVersion);
-            loginClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
 
             var formContent = new Dictionary<string, string> {
                 {PLEX_LOGIN_USER_NAME, userName },
@@ -119,13 +128,14 @@ namespace PlexLander.Plex
                 var document = XDocument.Parse(await content.ReadAsStringAsync());
                 //TODO: finish parsing the XML
 
-                return new LoginResult { Succes = true };
+                lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
             }
             else
             {
-                return new LoginResult { Succes = false, Error = response.StatusCode.ToString() };
+                lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
 
+            return lastLoginResult.Item2;
         }
         #endregion
 
@@ -135,7 +145,7 @@ namespace PlexLander.Plex
         /// <returns></returns>
         private string GetClientIdentifier()
         {
-            string salt = String.Format("{0}-{1}-{2}", configManager.ApplicationName, configManager.ApplicationVersion, configManager.DeviceName);
+            string salt = String.Format("{0}-{1}", configManager.ApplicationName, configManager.DeviceName);
             byte[] saltyBytes = Encoding.UTF8.GetBytes(salt);
             byte[] clientIdentifierBytes;
             using (var sha512 = new SHA512Managed())
@@ -146,37 +156,14 @@ namespace PlexLander.Plex
             saltyBytes = null;
             salt = null;
 
-            return Encoding.UTF8.GetString(clientIdentifierBytes);
-        }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            var sb = new StringBuilder();
+            foreach (var byteChar in clientIdentifierBytes)
             {
-                if (disposing)
-                {
-                    if (client != null)
-                    {
-                        client.Dispose();
-                    }
-                }
-
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                sb.Append(byteChar.ToString("x2"));
             }
-        }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            return sb.ToString();
         }
-        #endregion
     }
 
     public class LoginResult
@@ -184,5 +171,24 @@ namespace PlexLander.Plex
         public string Token { get; set; }
         public bool Succes { get; set; }
         public string Error { get; set; }
+    }
+
+    static class HttpClientExtensions
+    {
+        private const string X_PLEX_CONTAINER_START_HEADER = "X-Plex-Container-Start";
+        private const string X_PLEX_CONTAINER_SIZE_HEADER = "X-Plex-Container-Size";
+
+        /// <summary>
+        /// Sets the headers that do the paging
+        /// </summary>
+        /// <param name="start">at what item the page should start</param>
+        /// <param name="count">the amount of items to return (or less if less are available)</param>
+        private static void SetPlexPage(this HttpClient client, int start, int count = 10)
+        {
+            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_SIZE_HEADER);
+            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_START_HEADER);
+            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_START_HEADER, start.ToString());
+            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_SIZE_HEADER, count.ToString());
+        }
     }
 }
