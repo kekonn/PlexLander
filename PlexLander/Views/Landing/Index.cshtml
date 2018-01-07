@@ -1,4 +1,16 @@
 ﻿@model PlexLander.ViewModels.Landing.LandingViewModel
+@using PlexLander.ViewModels
+@functions{
+    public string GetUrl(AppViewModel vm)
+    {
+        string appUrl = vm.Url;
+        if (Url.IsLocalUrl(appUrl) && !string.IsNullOrEmpty(vm.Endpoint))
+        {
+            appUrl = Url.Action(new string(appUrl.Skip(1).ToArray()), vm.Endpoint);
+        }
+        return appUrl;
+    }
+}
 <div class="page-header">
     <h1>Welcome to @Model.ServerName!</h1>
     <p class="lead">Check what's new or add something new. It's up to you!</p>
@@ -16,11 +28,11 @@
         appEnumerator.MoveNext();
     }
     for (var i = 1; i <= rowCount; i++)
-    {
+    {        
         <div class="row">
             <div class="col-md-4">
                 <div class="app-presenter">
-                    <a href="@appEnumerator.Current.Url">
+                    <a href="@GetUrl(appEnumerator.Current)">
                         <img src="/images/@appEnumerator.Current.Icon" width="256" height="256" /><br />
                         <h3>@appEnumerator.Current.Name</h3>
                     </a>
@@ -32,25 +44,25 @@
             <div class="col-md-4">
                 <div class="app-presenter">
                     @if (appEnumerator.Current != null)
-                    {
-                        <a href="@appEnumerator.Current.Url">
+    {
+                        <a href="@GetUrl(appEnumerator.Current)">
                             <img src="/images/@appEnumerator.Current.Icon" width="256" height="256" /><br />
                             <h3>@appEnumerator.Current.Name</h3>
                         </a>
                         appEnumerator.MoveNext();
-                    }
+    }
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="app-presenter">
                     @if (appEnumerator.Current != null)
-                    {
-                        <a href="@appEnumerator.Current.Url">
+    {
+                        <a href="@GetUrl(appEnumerator.Current)">
                             <img src="/images/@appEnumerator.Current.Icon" width="256" height="256" /><br />
                             <h3>@appEnumerator.Current.Name</h3>
                         </a>
                         @appEnumerator.MoveNext();
-                    }
+    }
                 </div>
             </div>
         </div>

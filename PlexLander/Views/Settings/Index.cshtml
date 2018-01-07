@@ -1,5 +1,6 @@
 @using PlexLander.Models
 @using PlexLander.ViewModels.Settings
+@using PlexLander.HtmlHelpers
 @model SettingsIndexViewModel
 <div class="page-header">
     <h1>
@@ -13,9 +14,31 @@
 </ul>
 <div class="tab-content">
     <div class="tab-pane active" id="Servers">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3>Plex</h3>
+            </div>
+            <div class="panel-body">
+                @using (Html.BeginForm("SavePlexServerSettings", "Settings", FormMethod.Post))
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)
+                        @Html.ToggleSwitchFor(m => m.PlexServerSettingsViewModel.IsEnabled)
+                        <button type="submit"></button>
+                    </div>
 
-    </div>
-    <div class="tab-pane active" id="Apps">
+                    if (Model.PlexServerSettingsViewModel.IsEnabled)
+                    {
+                        <div class="form-group" id="plexsettings-followup">
+                            @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
+                            @Html.TextBoxFor(m => m.PlexServerSettingsViewModel.Token)
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div> <!-- servers tab-->
+    <div class="tab-pane" id="Apps">
         @if (Model.Apps.Count() == 0)
         {
             <text>
@@ -36,9 +59,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var app in Model.Apps)
+                    @foreach (var app in Model.Apps)
                     {
-                       @Html.Partial("_AppRow",app)
+                        @Html.Partial("_AppRow", app)
                     }
                 </tbody>
             </table>
@@ -67,3 +90,8 @@
 
     </div>
 </div>
+@section Scripts {
+<script type="text/javascript">
+        disableWithToggle("@Html.NameFor(m => m.PlexServerSettingsViewModel.IsEnabled)", "plexsettings-followup");
+</script>
+}
