@@ -21,11 +21,6 @@ namespace PlexLander.Controllers
             return View(new LandingViewModel(this.ServerName) { AppList = AppViewModelFactory.FromApps(userApps: _appRepo.ListAll(), builtInApps: ConfigManager.ListAll()) });
         }
 
-        public IActionResult WhatsNew()
-        {
-            throw new NotImplementedException();
-        }
-
         public IActionResult Error()
         {
             return View();

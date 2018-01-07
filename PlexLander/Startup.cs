@@ -40,6 +40,8 @@ namespace PlexLander
 
             //add own components
             services.AddSingleton<IConfigurationManager,ConfigurationManager>();
+            services.AddSingleton<Plex.IPlexService, Plex.PlexService>();
+            services.AddSingleton<IWhatsNewService, WhatsNewService>();
             services.AddRepositories();
             services.AddServers();
         }

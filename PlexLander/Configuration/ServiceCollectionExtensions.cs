@@ -15,7 +15,7 @@ namespace PlexLander.Configuration
 
         public static IServiceCollection AddServers(this IServiceCollection services)
         {
-            return services.AddScoped<Plex.IPlexServer, Plex.PlexServer>();
+            return services.AddScoped<Plex.IPlexService, Plex.PlexService>();
         }
     }
 }

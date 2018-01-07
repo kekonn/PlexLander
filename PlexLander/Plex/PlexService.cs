@@ -12,13 +12,15 @@ using System.Security.Cryptography;
 
 namespace PlexLander.Plex
 {
-    public interface IPlexServer : IDisposable
+    public interface IPlexService : IDisposable
     {
         Task<LoginResult> Login(string username, string password);
     }
 
-    public class PlexServer : IPlexServer
+    public class PlexService : IPlexService
     {
+        // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
+
         #region Plex header constants
         private const string X_PLEX_TOKEN_HEADER = "X-Plex-Token";
         private const string X_PLEX_PLATFORM_HEADER = "X-Plex-Platform";
@@ -38,11 +40,17 @@ namespace PlexLander.Plex
         private const string PLEX_LOGIN_USER_PASSWORD = "user[password]";
         #endregion
 
+        #region Plex.tv constants
+        private const string PLEX_TV_SERVERS_ENDPOINT = "pms/servers.xml";
+        private const string PLEX_TV_ACCOUNT_ENDPOINT = "users/account.xml";
+        private const string PLEX_TV_BASE = "https://plex.tv/";
+        #endregion
+
         private static HttpClient client;
         private string apiEndpoint = "https://app.plex.tv/";
         private Configuration.IConfigurationManager configManager;
 
-        public PlexServer(Configuration.IConfigurationManager configManager)
+        public PlexService(Configuration.IConfigurationManager configManager)
         {
             this.configManager = configManager ?? throw new ArgumentNullException("configManager");
 
@@ -55,7 +63,7 @@ namespace PlexLander.Plex
                 client = new HttpClient();
             }
 
-            if (string.IsNullOrEmpty(configManager.PlexApp.Endpoint))
+            if (!string.IsNullOrEmpty(configManager.PlexApp.Endpoint))
             {
                 apiEndpoint = configManager.PlexApp.Endpoint;
             }

@@ -112,7 +112,7 @@ namespace PlexLander.Configuration
 
             if (IsWhatsNewEnabled)
             {
-                _whatsNewApp = new BuiltInApp("What's New", config.WhatsNewIcon, "/WhatsNew", id: -2,endpoint: "Landing");
+                _whatsNewApp = new BuiltInApp("What's New", config.WhatsNewIcon, "/Index", id: -2, endpoint: "WhatsNew");
             }
         }
 

@@ -14,11 +14,11 @@ namespace PlexLander.Data
 
     public class WhatsNewService : IWhatsNewService
     {
-        private readonly Plex.IPlexServer plexServer;
+        private readonly Plex.IPlexService _plexServer;
 
-        public WhatsNewService(Plex.IPlexServer plexServer)
+        public WhatsNewService(Plex.IPlexService plexServer)
         {
-            this.plexServer = plexServer ?? throw new ArgumentNullException("plexServer");
+            _plexServer = plexServer ?? throw new ArgumentNullException("plexServer");
         }
 
         #region IDisposable Support
@@ -31,7 +31,7 @@ namespace PlexLander.Data
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    plexServer.Dispose();
+                    _plexServer.Dispose();
                 }
                 
                 disposedValue = true;
