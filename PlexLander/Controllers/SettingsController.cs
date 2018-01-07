@@ -14,11 +14,12 @@ using System;
 
 namespace PlexLander.Controllers
 {
+    [RequireHttps]
     public class SettingsController : PlexLanderBaseController
     {
         private readonly IAppRepository _appRepo;
 
-        public SettingsController(IAppRepository appRepo, ConfigurationManager configManager) : base(configManager)
+        public SettingsController(IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
         }
@@ -26,13 +27,25 @@ namespace PlexLander.Controllers
         // GET: /Settings/
         public IActionResult Index()
         {
-            return View(new SettingsIndexViewModel(ServerName) { Apps = _appRepo.ListAll() });
+            return View(new SettingsIndexViewModel(ServerName)
+            {
+                Apps = _appRepo.ListAll(),
+                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel()
+            });
+        }
+
+        //POST: /Settings/SavePlexServerSettings
+        [HttpPost()]
+        [ValidateAntiForgeryToken()]
+        public async Task<IActionResult> SavePlexServerSettings(bool isEnabled, string token)
+        {
+            throw new NotImplementedException();
         }
 
         //POST: /Settings/AddApp
         [HttpPost()]
         [ValidateAntiForgeryToken()]
-        public IActionResult AddApp([Bind("Name","Icon","Url")]App newApp)
+        public IActionResult AddApp([Bind("Name", "Icon", "Url")]App newApp)
         {
             try
             {
@@ -55,7 +68,7 @@ namespace PlexLander.Controllers
         }
 
         [HttpPost]
-        public IActionResult SaveApp([Bind("Id","Name","Url","Icon")]App app)
+        public IActionResult SaveApp([Bind("Id", "Name", "Url", "Icon")]App app)
         {
             try
             {
@@ -64,7 +77,8 @@ namespace PlexLander.Controllers
                     _appRepo.Update(app);
                     return PartialView("_AppRow", app);
                 }
-            } catch (DbUpdateException)
+            }
+            catch (DbUpdateException)
             {
                 return Json(new { ErrorMessage = "fail" });
             }
@@ -72,18 +86,29 @@ namespace PlexLander.Controllers
             return Json(new { ErrorMessage = "fail" });
         }
 
+        [HttpDelete]
         public IActionResult DeleteApp(int id)
         {
             try
             {
                 _appRepo.Remove(id);
-            } catch(DbUpdateException)
+            }
+            catch (DbUpdateException)
             {
                 //TODO logging
                 ModelState.AddModelError("", "Unable to save changes. If the problem persists, please contact your administrator.");
             }
 
             return RedirectToAction("Index");
+        }
+
+        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel()
+        {
+            return new PlexServerSettingsViewModel()
+            {
+                IsEnabled = ConfigManager.IsPlexEnabled,
+                Token = ConfigManager.PlexApp.Token
+            };
         }
     }
 }

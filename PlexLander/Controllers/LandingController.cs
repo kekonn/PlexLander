@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlexLander.Data;
 using PlexLander.Configuration;
 using PlexLander.ViewModels;
+using System;
 
 namespace PlexLander.Controllers
 {
@@ -10,16 +11,20 @@ namespace PlexLander.Controllers
     {
         private readonly IAppRepository _appRepo;
 
-        public LandingController(IAppRepository appRepo, ConfigurationManager configManager) : base(configManager)
+        public LandingController(IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
         }
 
         public IActionResult Index()
         {
-            return View(new LandingViewModel(this.ServerName) { AppList = AppViewModelFactory.FromApps(userApps:_appRepo.ListAll(),builtInApps:ConfigManager.ListAll())});
+            return View(new LandingViewModel(this.ServerName) { AppList = AppViewModelFactory.FromApps(userApps: _appRepo.ListAll(), builtInApps: ConfigManager.ListAll()) });
         }
 
+        public IActionResult WhatsNew()
+        {
+            throw new NotImplementedException();
+        }
 
         public IActionResult Error()
         {
