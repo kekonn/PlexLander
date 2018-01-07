@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using PlexLander.Models;
-using System;
 using Microsoft.Extensions.PlatformAbstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace PlexLander.Configuration
 {
