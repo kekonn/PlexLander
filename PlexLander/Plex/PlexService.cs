@@ -9,7 +9,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Security.Cryptography;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace PlexLander.Plex
 {
@@ -24,7 +24,7 @@ namespace PlexLander.Plex
         // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
 
         #region Logging
-        ILog Log = LogManager.GetLogger("PlexService");
+        private readonly ILogger<IPlexService> _logger;
         #endregion 
 
         #region Plex header constants
@@ -49,7 +49,7 @@ namespace PlexLander.Plex
         private const string PLEX_TV_ACCOUNT_ENDPOINT = "users/account.xml";
         private const string PLEX_TV_BASE = "https://plex.tv/";
         #endregion
-        
+
         private string apiEndpoint = "https://app.plex.tv/";
         private Configuration.IConfigurationManager configManager;
         private Tuple<DateTime, LoginResult> lastLoginResult;
@@ -66,18 +66,19 @@ namespace PlexLander.Plex
         }
         #endregion
 
-        public PlexService(Configuration.IConfigurationManager configManager)
+        public PlexService(Configuration.IConfigurationManager configManager, ILogger<IPlexService> logger)
         {
             this.configManager = configManager ?? throw new ArgumentNullException("configManager");
 
             if (!configManager.IsPlexEnabled)
                 throw new ApplicationException("Please enable and configure Plex.");
-            
+
             if (!string.IsNullOrEmpty(configManager.PlexApp.Endpoint))
             {
                 apiEndpoint = configManager.PlexApp.Endpoint;
             }
-            
+
+            _logger = logger;
         }
 
         private HttpClient GetPlexClient(string baseAddress)
@@ -86,10 +87,12 @@ namespace PlexLander.Plex
             if (string.IsNullOrWhiteSpace(baseAddress) && !string.IsNullOrWhiteSpace(apiEndpoint))
             {
                 endpoint = apiEndpoint;
-            } else if (!string.IsNullOrWhiteSpace(baseAddress))
+            }
+            else if (!string.IsNullOrWhiteSpace(baseAddress))
             {
                 endpoint = baseAddress;
-            } else
+            }
+            else
                 throw new InvalidOperationException("No endpoint is defined. Set the default endpoint or pass an endpoint as a parameter.");
 
             var client = new HttpClient()
@@ -126,19 +129,18 @@ namespace PlexLander.Plex
                 {PLEX_LOGIN_USER_PASSWORD, password }
             };
             HttpContent content = new FormUrlEncodedContent(formContent);
-            Log.Debug(l => l("Calling {0}", PLEX_LOGIN_BASE + PLEX_LOGIN_ENDPOINT));
-            Log.Debug(l => l("With content {0}", content.ToString()));
+            _logger.LogDebug("Calling {0}{1}", PLEX_LOGIN_BASE, PLEX_LOGIN_ENDPOINT);
+            _logger.LogDebug("With content {0}", content.ToString());
 
             var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, content);
-            Log.Debug(l => l("Got response:\n {0}", response.ToString()));
+            _logger.LogDebug("Got response:\n {0}", response.ToString());
 
             if (response.IsSuccessStatusCode)
             {
                 content = response.Content;
                 var document = XDocument.Parse(await content.ReadAsStringAsync());
                 //TODO: finish parsing the XML
-                Log.Debug(l => l("Got response:"));
-                Log.Debug(l => l(document.ToString()));
+                _logger.LogDebug("Response content: {0}", document.ToString());
 
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
             }
@@ -147,7 +149,7 @@ namespace PlexLander.Plex
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
 
-            Log.Info(l => l("Login result: {0}", lastLoginResult.Item2.ToString()));
+            _logger.LogInformation("Login result: {0}", lastLoginResult.Item2.ToString());
             return lastLoginResult.Item2;
         }
         #endregion
@@ -175,7 +177,7 @@ namespace PlexLander.Plex
                 sb.Append(byteChar.ToString("x2"));
             }
 
-            Log.Debug(l => l("Client Identifier: {0}", sb.ToString()));
+            _logger.LogTrace("Client Identifier: {0}", sb.ToString());
             return sb.ToString();
         }
     }
