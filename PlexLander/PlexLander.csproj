@@ -46,7 +46,7 @@
     <Content Update="app.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="nlog.config">
+    <Content Update="NLog.debug.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

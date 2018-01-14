@@ -13,7 +13,7 @@ namespace PlexLander
         public static void Main(string[] args)
         {
             // NLog: setup the logger first to catch all 
-            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            var logger = NLogBuilder.ConfigureNLog("NLog.debug.config").GetCurrentClassLogger();
             logger.Log(NLog.LogLevel.Info, "Building server");
 
             try
