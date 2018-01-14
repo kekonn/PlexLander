@@ -12,19 +12,28 @@ namespace PlexLander
     {
         public static void Main(string[] args)
         {
-            // NLog: setup the logger first to catch all errors
+            // NLog: setup the logger first to catch all 
             var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            logger.Log(NLog.LogLevel.Info, "Building server");
 
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .UseNLog()
-                .UseApplicationInsights()
-                .Build();
+            try
+            {
+                var host = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseStartup<Startup>()
+                    .UseNLog()
+                    .UseApplicationInsights()
+                    .Build();
 
-            host.Run();
+                logger.Log(NLog.LogLevel.Info, "Starting server");
+                host.Run();
+            } catch (Exception e)
+            {
+                logger.Log(NLog.LogLevel.Fatal, e, "An exception has occured while building or starting the server.");
+            }
+            logger.Log(NLog.LogLevel.Info, "Server was shut down.");
         }
     }
 }

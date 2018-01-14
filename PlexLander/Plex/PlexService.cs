@@ -24,7 +24,7 @@ namespace PlexLander.Plex
         // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
 
         #region Logging
-        private readonly ILogger<IPlexService> _logger;
+        private readonly ILogger<PlexService> _logger;
         #endregion 
 
         #region Plex header constants
@@ -66,7 +66,7 @@ namespace PlexLander.Plex
         }
         #endregion
 
-        public PlexService(Configuration.IConfigurationManager configManager, ILogger<IPlexService> logger)
+        public PlexService(Configuration.IConfigurationManager configManager, ILogger<PlexService> logger)
         {
             this.configManager = configManager ?? throw new ArgumentNullException("configManager");
 
