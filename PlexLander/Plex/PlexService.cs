@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Security.Cryptography;
+using Common.Logging;
 
 namespace PlexLander.Plex
 {
@@ -21,6 +22,10 @@ namespace PlexLander.Plex
     public class PlexService : IPlexService
     {
         // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
+
+        #region Logging
+        ILog Log = LogManager.GetLogger("PlexService");
+        #endregion 
 
         #region Plex header constants
         private const string X_PLEX_TOKEN_HEADER = "X-Plex-Token";
@@ -121,12 +126,19 @@ namespace PlexLander.Plex
                 {PLEX_LOGIN_USER_PASSWORD, password }
             };
             HttpContent content = new FormUrlEncodedContent(formContent);
+            Log.Debug(l => l("Calling {0}", PLEX_LOGIN_BASE + PLEX_LOGIN_ENDPOINT));
+            Log.Debug(l => l("With content {0}", content.ToString()));
+
             var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, content);
+            Log.Debug(l => l("Got response:\n {0}", response.ToString()));
+
             if (response.IsSuccessStatusCode)
             {
                 content = response.Content;
                 var document = XDocument.Parse(await content.ReadAsStringAsync());
                 //TODO: finish parsing the XML
+                Log.Debug(l => l("Got response:"));
+                Log.Debug(l => l(document.ToString()));
 
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
             }
@@ -135,6 +147,7 @@ namespace PlexLander.Plex
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
 
+            Log.Info(l => l("Login result: {0}", lastLoginResult.Item2.ToString()));
             return lastLoginResult.Item2;
         }
         #endregion
@@ -162,6 +175,7 @@ namespace PlexLander.Plex
                 sb.Append(byteChar.ToString("x2"));
             }
 
+            Log.Debug(l => l("Client Identifier: {0}", sb.ToString()));
             return sb.ToString();
         }
     }
@@ -171,6 +185,11 @@ namespace PlexLander.Plex
         public string Token { get; set; }
         public bool Succes { get; set; }
         public string Error { get; set; }
+
+        public override string ToString()
+        {
+            return $"Succes: {Succes} Token: {Token} Error: {Error}";
+        }
     }
 
     static class HttpClientExtensions
