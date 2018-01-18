@@ -24,7 +24,7 @@ namespace PlexLander.Plex
         // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
 
         #region Logging
-        private readonly ILogger<PlexService> _logger;
+        private readonly ILogger<IPlexService> _logger;
         #endregion 
 
         #region Plex header constants
@@ -66,7 +66,7 @@ namespace PlexLander.Plex
         }
         #endregion
 
-        public PlexService(Configuration.IConfigurationManager configManager, ILogger<PlexService> logger)
+        public PlexService(Configuration.IConfigurationManager configManager, ILogger<IPlexService> logger)
         {
             this.configManager = configManager ?? throw new ArgumentNullException("configManager");
 
@@ -129,18 +129,18 @@ namespace PlexLander.Plex
                 {PLEX_LOGIN_USER_PASSWORD, password }
             };
             HttpContent content = new FormUrlEncodedContent(formContent);
-            _logger.LogDebug("Calling {0}{1}", PLEX_LOGIN_BASE, PLEX_LOGIN_ENDPOINT);
-            _logger.LogDebug("With content {0}", content.ToString());
+            _logger.LogTrace("Calling {0}{1}", PLEX_LOGIN_BASE, PLEX_LOGIN_ENDPOINT);
+            _logger.LogTrace("With content {0}", content.ToString());
 
             var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, content);
-            _logger.LogDebug("Got response:\n {0}", response.ToString());
+            _logger.LogTrace("Got response:\n {0}", response.ToString());
 
             if (response.IsSuccessStatusCode)
             {
                 content = response.Content;
                 var document = XDocument.Parse(await content.ReadAsStringAsync());
                 //TODO: finish parsing the XML
-                _logger.LogDebug("Response content: {0}", document.ToString());
+                _logger.LogTrace("Response content: {0}", document.ToString());
 
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
             }
@@ -149,7 +149,7 @@ namespace PlexLander.Plex
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
 
-            _logger.LogInformation("Login result: {0}", lastLoginResult.Item2.ToString());
+            _logger.LogTrace("Login result: {0}", lastLoginResult.Item2.ToString());
             return lastLoginResult.Item2;
         }
         #endregion

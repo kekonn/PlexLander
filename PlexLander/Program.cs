@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using NLog.Web;
+using Microsoft.Extensions.Logging;
 
 namespace PlexLander
 {
@@ -22,14 +23,20 @@ namespace PlexLander
                     .UseKestrel()
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseIISIntegration()
+                    .ConfigureLogging(logging =>
+                    {
+                        // see: https://github.com/NLog/NLog.Web/issues/234 
+                        logging.ConfigureNLog("NLog.debug.config");
+                        logging.SetMinimumLevel(LogLevel.Trace);
+                    })
                     .UseStartup<Startup>()
-                    .UseNLog()
                     .UseApplicationInsights()
                     .Build();
 
                 logger.Log(NLog.LogLevel.Info, "Starting server");
                 host.Run();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 logger.Log(NLog.LogLevel.Fatal, e, "An exception has occured while building or starting the server.");
             }

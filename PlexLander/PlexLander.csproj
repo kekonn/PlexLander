@@ -18,6 +18,10 @@
   <ItemGroup>
     <Content Remove="wwwroot/images\Thumbs.db" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="NLog.debug.log" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
@@ -34,7 +38,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc6" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.5.0-rc2" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
