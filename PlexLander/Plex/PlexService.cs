@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Encodings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,8 +41,10 @@ namespace PlexLander.Plex
         #region Login constants
         private const string PLEX_LOGIN_BASE = "https://plex.tv/";
         private const string PLEX_LOGIN_ENDPOINT = "users/sign_in.xml";
-        private const string PLEX_LOGIN_USER_NAME = "user[name]";
-        private const string PLEX_LOGIN_USER_PASSWORD = "user[password]";
+        //private const string PLEX_LOGIN_USER_NAME = "user[name]";
+        //private const string PLEX_LOGIN_USER_PASSWORD = "user[password]";
+        private const string HTTP_AUTHORIZATION = "Authorization";
+        private const string HTTP_BASIC_FORMAT = "Basic {0}";
         #endregion
 
         #region Plex.tv constants
@@ -51,7 +54,7 @@ namespace PlexLander.Plex
         #endregion
 
         private string apiEndpoint = "https://app.plex.tv/";
-        private Configuration.IConfigurationManager configManager;
+        private readonly Configuration.IConfigurationManager configManager;
         private Tuple<DateTime, LoginResult> lastLoginResult;
 
         #region Properties
@@ -81,7 +84,8 @@ namespace PlexLander.Plex
             _logger = logger;
         }
 
-        private HttpClient GetPlexClient(string baseAddress)
+        #region HttpClient building
+        private HttpClient GetBaseClient(string baseAddress)
         {
             string endpoint;
             if (string.IsNullOrWhiteSpace(baseAddress) && !string.IsNullOrWhiteSpace(apiEndpoint))
@@ -100,17 +104,31 @@ namespace PlexLander.Plex
                 BaseAddress = new Uri(endpoint)
             };
 
-            //set all the default headers
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
             client.DefaultRequestHeaders.Add(X_PLEX_PRODUCT_HEADER, configManager.ApplicationName);
             client.DefaultRequestHeaders.Add(X_PLEX_VERSION_HEADER, configManager.ApplicationVersion);
-            client.DefaultRequestHeaders.Add(X_PLEX_DEVICE_HEADER, configManager.DeviceName);
             client.DefaultRequestHeaders.Add(X_PLEX_CLIENT_IDENTIFIER_HEADER, GetClientIdentifier());
+
+            return client;
+        }
+
+        private HttpClient GetPlexClient(string baseAddress)
+        {
+            var client = GetBaseClient(baseAddress);
+
+            //set all the default headers
+            client.DefaultRequestHeaders.Add(X_PLEX_DEVICE_HEADER, configManager.DeviceName);
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, configManager.PlatformName);
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, configManager.PlatformVersion);
 
             return client;
         }
+
+        private HttpClient GetLoginClient()
+        {
+            return GetBaseClient(PLEX_LOGIN_BASE);
+        }
+        #endregion
 
         #region Login
         public async Task<LoginResult> Login(string userName, string password)
@@ -121,26 +139,18 @@ namespace PlexLander.Plex
                 return lastLoginResult.Item2;
             }
             //HttpClient setup
-            var loginClient = GetPlexClient(PLEX_LOGIN_BASE);
-            loginClient.BaseAddress = new Uri(PLEX_LOGIN_BASE);
-
-            var formContent = new Dictionary<string, string> {
-                {PLEX_LOGIN_USER_NAME, userName },
-                {PLEX_LOGIN_USER_PASSWORD, password }
-            };
-            HttpContent content = new FormUrlEncodedContent(formContent);
-            _logger.LogTrace("Calling {0}{1}", PLEX_LOGIN_BASE, PLEX_LOGIN_ENDPOINT);
-            _logger.LogTrace("With content {0}", content.ToString());
-
-            var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, content);
-            _logger.LogTrace("Got response:\n {0}", response.ToString());
+            var loginClient = GetLoginClient();
+            
+            var authString = Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes($"{userName}:{password}"));
+            loginClient.DefaultRequestHeaders.Add(HTTP_AUTHORIZATION, string.Format(HTTP_BASIC_FORMAT, authString));
+            var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, null);
+            _logger.LogTrace("Got response:\n {0}", await response.Content.ReadAsStringAsync());
 
             if (response.IsSuccessStatusCode)
             {
-                content = response.Content;
-                var document = XDocument.Parse(await content.ReadAsStringAsync());
+                var responseContent = response.Content;
+                var document = XDocument.Parse(await responseContent.ReadAsStringAsync());
                 //TODO: finish parsing the XML
-                _logger.LogTrace("Response content: {0}", document.ToString());
 
                 lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
             }
