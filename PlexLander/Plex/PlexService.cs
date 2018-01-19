@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Encodings;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using PlexLander.Models;
 using System.Text;
-using System.Xml;
 using System.Xml.Linq;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
@@ -54,24 +53,24 @@ namespace PlexLander.Plex
         #endregion
 
         private string apiEndpoint = "https://app.plex.tv/";
-        private readonly Configuration.IConfigurationManager configManager;
-        private Tuple<DateTime, LoginResult> lastLoginResult;
+        private readonly Configuration.IConfigurationManager _configManager;
+        private Tuple<DateTime, LoginResult> _lastLoginResult;
 
         #region Properties
         public bool HasValidLogin
         {
             get
             {
-                return lastLoginResult != null
-                && (DateTime.Now - lastLoginResult.Item1).Days <= 10
-                && lastLoginResult.Item2.Succes == true;
+                return _lastLoginResult != null
+                && (DateTime.Now - _lastLoginResult.Item1).Days <= 10
+                && _lastLoginResult.Item2.Succes == true;
             }
         }
         #endregion
 
         public PlexService(Configuration.IConfigurationManager configManager, ILogger<IPlexService> logger)
         {
-            this.configManager = configManager ?? throw new ArgumentNullException("configManager");
+            _configManager = configManager ?? throw new ArgumentNullException("configManager");
 
             if (!configManager.IsPlexEnabled)
                 throw new ApplicationException("Please enable and configure Plex.");
@@ -105,8 +104,8 @@ namespace PlexLander.Plex
             };
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
-            client.DefaultRequestHeaders.Add(X_PLEX_PRODUCT_HEADER, configManager.ApplicationName);
-            client.DefaultRequestHeaders.Add(X_PLEX_VERSION_HEADER, configManager.ApplicationVersion);
+            client.DefaultRequestHeaders.Add(X_PLEX_PRODUCT_HEADER, _configManager.ApplicationName);
+            client.DefaultRequestHeaders.Add(X_PLEX_VERSION_HEADER, _configManager.ApplicationVersion);
             client.DefaultRequestHeaders.Add(X_PLEX_CLIENT_IDENTIFIER_HEADER, GetClientIdentifier());
 
             return client;
@@ -117,9 +116,9 @@ namespace PlexLander.Plex
             var client = GetBaseClient(baseAddress);
 
             //set all the default headers
-            client.DefaultRequestHeaders.Add(X_PLEX_DEVICE_HEADER, configManager.DeviceName);
-            client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, configManager.PlatformName);
-            client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, configManager.PlatformVersion);
+            client.DefaultRequestHeaders.Add(X_PLEX_DEVICE_HEADER, _configManager.DeviceName);
+            client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, _configManager.PlatformName);
+            client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, _configManager.PlatformVersion);
 
             return client;
         }
@@ -136,7 +135,7 @@ namespace PlexLander.Plex
             if (HasValidLogin) //we can always change this timeout later, for now it is hardcoded
             {
                 // we've already logged on succesfully in the last 10 days
-                return lastLoginResult.Item2;
+                return _lastLoginResult.Item2;
             }
             //HttpClient setup
             var loginClient = GetLoginClient();
@@ -150,17 +149,33 @@ namespace PlexLander.Plex
             {
                 var responseContent = response.Content;
                 var document = XDocument.Parse(await responseContent.ReadAsStringAsync());
-                //TODO: finish parsing the XML
 
-                lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true });
+                var plexUser = GetPlexUser(document);
+
+                _lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true, User = plexUser });
             }
             else
             {
-                lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
+                _lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
 
-            _logger.LogTrace("Login result: {0}", lastLoginResult.Item2.ToString());
-            return lastLoginResult.Item2;
+            _logger.LogTrace("Login result: {0}", _lastLoginResult.Item2.ToString());
+            return _lastLoginResult.Item2;
+        }
+
+        private PlexUser GetPlexUser(XDocument doc)
+        {
+            if (doc == null)
+                throw new ArgumentException("doc");
+
+            var root = doc.Root.Element("user");
+            return new PlexUser
+            {
+                Email = (string)root.Attribute("email"),
+                Username = (string)root.Attribute("username"),
+                Thumbnail = (string)root.Attribute("thumb"),
+                Token = (string)root.Attribute("authToken")
+            };
         }
         #endregion
 
@@ -170,7 +185,7 @@ namespace PlexLander.Plex
         /// <returns></returns>
         private string GetClientIdentifier()
         {
-            string salt = String.Format("{0}-{1}", configManager.ApplicationName, configManager.DeviceName);
+            string salt = String.Format("{0}-{1}", _configManager.ApplicationName, _configManager.DeviceName);
             byte[] saltyBytes = Encoding.UTF8.GetBytes(salt);
             byte[] clientIdentifierBytes;
             using (var sha512 = new SHA512Managed())
@@ -189,18 +204,6 @@ namespace PlexLander.Plex
 
             _logger.LogTrace("Client Identifier: {0}", sb.ToString());
             return sb.ToString();
-        }
-    }
-
-    public class LoginResult
-    {
-        public string Token { get; set; }
-        public bool Succes { get; set; }
-        public string Error { get; set; }
-
-        public override string ToString()
-        {
-            return $"Succes: {Succes} Token: {Token} Error: {Error}";
         }
     }
 
