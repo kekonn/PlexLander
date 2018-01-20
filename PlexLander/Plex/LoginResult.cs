@@ -8,7 +8,10 @@
 
         public override string ToString()
         {
-            return $"Succes: {Succes} - Token: {User.Token} - Error: {Error}";
+            if (Succes)
+                return $"Succes - User {User.Username}";
+            else
+                return $"Error - {Error}";
         }
     }
 }
