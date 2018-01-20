@@ -139,22 +139,20 @@ namespace PlexLander.Plex
             }
             //HttpClient setup
             var loginClient = GetLoginClient();
-            
+
             var authString = Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes($"{userName}:{password}"));
             loginClient.DefaultRequestHeaders.Add(HTTP_AUTHORIZATION, string.Format(HTTP_BASIC_FORMAT, authString));
             var response = await loginClient.PostAsync(PLEX_LOGIN_ENDPOINT, null);
-            _logger.LogTrace("Got response:\n {0}", await response.Content.ReadAsStringAsync());
 
-            if (response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode) // GREAT SUCCES!
             {
-                var responseContent = response.Content;
-                var document = XDocument.Parse(await responseContent.ReadAsStringAsync());
+                var document = XDocument.Parse(await response.Content.ReadAsStringAsync());
 
-                var plexUser = GetPlexUser(document);
+                var plexUser = GetPlexUserFromXml(document);
 
                 _lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult() { Succes = true, User = plexUser });
             }
-            else
+            else // *sad trombone*
             {
                 _lastLoginResult = new Tuple<DateTime, LoginResult>(DateTime.Now, new LoginResult { Succes = false, Error = response.StatusCode.ToString() });
             }
@@ -163,7 +161,7 @@ namespace PlexLander.Plex
             return _lastLoginResult.Item2;
         }
 
-        private PlexUser GetPlexUser(XDocument doc)
+        private PlexUser GetPlexUserFromXml(XDocument doc)
         {
             if (doc == null)
                 throw new ArgumentException("doc");
@@ -180,7 +178,7 @@ namespace PlexLander.Plex
         #endregion
 
         /// <summary>
-        /// Makes an SHA512 hash of the application name, version number and device name
+        /// Makes an SHA512 hash of the application name and device name
         /// </summary>
         /// <returns></returns>
         private string GetClientIdentifier()
@@ -217,12 +215,18 @@ namespace PlexLander.Plex
         /// </summary>
         /// <param name="start">at what item the page should start</param>
         /// <param name="count">the amount of items to return (or less if less are available)</param>
-        private static void SetPlexPage(this HttpClient client, int start, int count = 10)
+        private static void SetPlexPage(this HttpClient client, int? start = 1, int? count = 10)
         {
-            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_SIZE_HEADER);
-            client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_START_HEADER);
-            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_START_HEADER, start.ToString());
-            client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_SIZE_HEADER, count.ToString());
+            if (start.HasValue)
+            {
+                client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_START_HEADER);
+                client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_START_HEADER, start.Value.ToString());
+            }
+            if (count.HasValue)
+            {
+                client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_SIZE_HEADER);
+                client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_SIZE_HEADER, count.ToString());
+            }
         }
     }
 }

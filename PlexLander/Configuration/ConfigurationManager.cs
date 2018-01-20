@@ -116,6 +116,10 @@ namespace PlexLander.Configuration
             }
         }
 
+        /// <summary>
+        /// Gets a list of all the built in applications.
+        /// </summary>
+        /// <returns>an IEnumerable&lt;BuiltInApp&gt; of apps.</returns>
         public IEnumerable<BuiltInApp> ListAll()
         {
             var appList = new List<BuiltInApp>(4);
