@@ -54,6 +54,7 @@ namespace PlexLander.Plex
 
         private string apiEndpoint = "https://app.plex.tv/";
         private readonly Configuration.IConfigurationManager _configManager;
+        private readonly Data.IPlexSessionRepository _sessionRepo;
         private Tuple<DateTime, LoginResult> _lastLoginResult;
 
         #region Properties
@@ -68,19 +69,27 @@ namespace PlexLander.Plex
         }
         #endregion
 
-        public PlexService(Configuration.IConfigurationManager configManager, ILogger<IPlexService> logger)
+        public PlexService(Configuration.IConfigurationManager configManager, Data.IPlexSessionRepository sessionRepo, ILogger<IPlexService> logger)
         {
             _configManager = configManager ?? throw new ArgumentNullException("configManager");
-
             if (!configManager.IsPlexEnabled)
                 throw new ApplicationException("Please enable and configure Plex.");
+
+            _sessionRepo = sessionRepo;
+
+            _logger = logger;
 
             if (!string.IsNullOrEmpty(configManager.PlexApp.Endpoint))
             {
                 apiEndpoint = configManager.PlexApp.Endpoint;
             }
 
-            _logger = logger;
+            LoadLastLogin();
+        }
+
+        private void LoadLastLogin()
+        {
+            throw new NotImplementedException();
         }
 
         #region HttpClient building

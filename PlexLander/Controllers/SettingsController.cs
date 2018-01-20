@@ -20,11 +20,14 @@ namespace PlexLander.Controllers
     {
         private readonly IAppRepository _appRepo;
         private readonly IPlexService _plexService;
+        private readonly IPlexSessionRepository _plexSessionRepo;
 
-        public SettingsController(IPlexService plexService, IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
+        public SettingsController(IPlexService plexService, IAppRepository appRepo, 
+            IPlexSessionRepository plexSessionRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
             _plexService = plexService;
+            _plexSessionRepo = plexSessionRepo;
         }
 
         // GET: /Settings/
@@ -93,8 +96,21 @@ namespace PlexLander.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlexAuthentication(string username, string password)
         {
-            var loginResult = await _plexService.Login(username, password);
-            return RedirectToAction("Index", new PlexAuthenticationResultViewModel() { Succes = loginResult.Succes, Error = loginResult.Error });
+            var loginResult = await _plexService.Login(username, password)
+            if (loginResult.Succes)
+            {
+                var user = loginResult.User;
+                _plexSessionRepo.DeleteOldSessions();
+                var sessionsWithEmailQuery = _plexSessionRepo.GetSessionsForEmail(loginResult.User.Email);
+                if (sessionsWithEmailQuery.Any())
+                {
+
+                    var session = sessionsWithEmailQuery.Where(s => s.Token == user.Token && s.Username == user.Username);
+
+                }
+            }
+
+            return RedirectToAction("Index");
         }
 
         [HttpDelete]

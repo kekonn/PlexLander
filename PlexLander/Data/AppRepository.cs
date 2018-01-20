@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using PlexLander.Models;
-using PlexLander.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace PlexLander.Data
 {

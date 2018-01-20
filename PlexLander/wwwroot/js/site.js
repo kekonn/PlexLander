@@ -93,3 +93,14 @@ function bindButtonToForm(formName) {
 function showModal(modalElement) {
     $(modalElement).modal("show");
 }
+
+/**
+ * wire up a form to submit on enter
+ * @param {any} formIdentifier the identifier string or jQuery object identifying the form
+ */
+function wireUpForm(formIdentifier) {
+    $(formIdentifier).on('keyup', function (e) {
+        if (e.keyCode == 13)
+            form.submit();
+    });
+}
