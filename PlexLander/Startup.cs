@@ -37,6 +37,8 @@ namespace PlexLander
             services.Configure<ServerConfiguration>(Configuration.GetSection("ServerConfiguration"));
             //Add EFCore
             services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            //Add caching
+            services.AddMemoryCache();
 
             //add own components
             services.AddSingleton<IConfigurationManager,ConfigurationManager>();
