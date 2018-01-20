@@ -168,7 +168,7 @@ namespace PlexLander.Plex
             if (doc == null)
                 throw new ArgumentException("doc");
 
-            var root = doc.Root.Element("user");
+            var root = doc.Element("user");
             return new PlexUser
             {
                 Email = (string)root.Attribute("email"),
