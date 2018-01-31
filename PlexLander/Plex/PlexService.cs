@@ -40,8 +40,6 @@ namespace PlexLander.Plex
         #region Login constants
         private const string PLEX_LOGIN_BASE = "https://plex.tv/";
         private const string PLEX_LOGIN_ENDPOINT = "users/sign_in.xml";
-        //private const string PLEX_LOGIN_USER_NAME = "user[name]";
-        //private const string PLEX_LOGIN_USER_PASSWORD = "user[password]";
         private const string HTTP_AUTHORIZATION = "Authorization";
         private const string HTTP_BASIC_FORMAT = "Basic {0}";
         #endregion
@@ -89,7 +87,21 @@ namespace PlexLander.Plex
 
         private void LoadLastLogin()
         {
-            throw new NotImplementedException();
+            var lastSession = _sessionRepo.GetLastSession();
+
+            if (lastSession == null)
+                return;
+
+            _lastLoginResult = new Tuple<DateTime, LoginResult>(lastSession.SessionStart, new LoginResult() {
+                Succes = true,
+                User = new PlexUser
+                {
+                    Email = lastSession.Email,
+                    Thumbnail = lastSession.Thumbnail,
+                    Token = lastSession.Token,
+                    Username = lastSession.Username
+                }
+            });
         }
 
         #region HttpClient building

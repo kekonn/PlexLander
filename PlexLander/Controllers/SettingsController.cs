@@ -21,6 +21,9 @@ namespace PlexLander.Controllers
         private readonly IAppRepository _appRepo;
         private readonly IPlexService _plexService;
         private readonly IPlexSessionRepository _plexSessionRepo;
+        private readonly TimeSpan _maxSessionAge = TimeSpan.FromDays(10d);
+
+        private const string LOGIN_RESULT_KEY = "Login result";
 
         public SettingsController(IPlexService plexService, IAppRepository appRepo, 
             IPlexSessionRepository plexSessionRepo, IConfigurationManager configManager) : base(configManager)
@@ -31,8 +34,9 @@ namespace PlexLander.Controllers
         }
 
         // GET: /Settings/
-        public IActionResult Index(PlexAuthenticationResultViewModel plexLoginResult = null)
+        public IActionResult Index()
         {
+            PlexAuthenticationResultViewModel plexLoginResult = TempData[LOGIN_RESULT_KEY] as PlexAuthenticationResultViewModel;
             return View(new SettingsIndexViewModel(ServerName)
             {
                 Apps = _appRepo.ListAll(),
@@ -96,17 +100,16 @@ namespace PlexLander.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlexAuthentication(string username, string password)
         {
-            var loginResult = await _plexService.Login(username, password)
+            var loginResult = await _plexService.Login(username, password);
             if (loginResult.Succes)
             {
                 var user = loginResult.User;
-                _plexSessionRepo.DeleteOldSessions();
-                var sessionsWithEmailQuery = _plexSessionRepo.GetSessionsForEmail(loginResult.User.Email);
-                if (sessionsWithEmailQuery.Any())
+                _plexSessionRepo.DeleteOldSessions(_maxSessionAge);
+                var sessionsQuery = _plexSessionRepo.GetSessionsForEmail(loginResult.User.Email).Where(s => s.Token == user.Token && s.Username == user.Username);
+
+                if (sessionsQuery.Any())
                 {
-
-                    var session = sessionsWithEmailQuery.Where(s => s.Token == user.Token && s.Username == user.Username);
-
+                    TempData[LOGIN_RESULT_KEY] = sessionsQuery.OrderBy(s => s.SessionStart).First();
                 }
             }
 

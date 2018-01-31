@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using PlexLander.Data;
 using PlexLander.Configuration;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace PlexLander
 {
@@ -74,6 +75,17 @@ namespace PlexLander
                     name: "default",
                     template: "{controller=Landing}/{action=Index}");
             });
+        }
+    }
+
+    public class PlexLanderContextFactory : IDesignTimeDbContextFactory<PlexLanderContext>
+    {
+        public PlexLanderContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<PlexLanderContext>();
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=PlexLander;Trusted_Connection=True;MultipleActiveResultSets=true");
+
+            return new PlexLanderContext(optionsBuilder.Options);
         }
     }
 }

@@ -19,8 +19,7 @@ namespace PlexLander.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<App>().ToTable("Apps");
-            modelBuilder.Entity<PlexAuthentication>().ToTable("PlexSessions")
-                .HasMany<PlexServer>();
+            modelBuilder.Entity<PlexAuthentication>().ToTable("PlexSessions").HasKey(a => new { a.Email, a.Token });
         }
     }
 

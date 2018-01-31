@@ -89,5 +89,10 @@ namespace PlexLander.Data
                 _context.SaveChanges();
             }
         }
+
+        public PlexAuthentication GetLastSession()
+        {
+            return _context.PlexSessions.OrderBy(s => s.SessionStart).FirstOrDefault();
+        }
     }
 }

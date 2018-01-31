@@ -10,5 +10,6 @@ namespace PlexLander.Data
         IQueryable<PlexAuthentication> GetSessionsForEmail(string email);
         void Save(string email, string token, string username, DateTime sessionStart, string thumbnail = "", IEnumerable<PlexServer> servers = null);
         void DeleteOldSessions(TimeSpan sessionAge);
+        PlexAuthentication GetLastSession();
     }
 }
