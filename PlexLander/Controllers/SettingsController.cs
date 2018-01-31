@@ -34,13 +34,12 @@ namespace PlexLander.Controllers
         }
 
         // GET: /Settings/
-        public IActionResult Index()
+        public IActionResult Index(PlexAuthenticationResultViewModel session = null)
         {
-            PlexAuthenticationResultViewModel plexLoginResult = TempData[LOGIN_RESULT_KEY] as PlexAuthenticationResultViewModel;
             return View(new SettingsIndexViewModel(ServerName)
             {
                 Apps = _appRepo.ListAll(),
-                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(plexLoginResult)
+                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(session)
             });
         }
 
@@ -107,13 +106,30 @@ namespace PlexLander.Controllers
                 _plexSessionRepo.DeleteOldSessions(_maxSessionAge);
                 var sessionsQuery = _plexSessionRepo.GetSessionsForEmail(loginResult.User.Email).Where(s => s.Token == user.Token && s.Username == user.Username);
 
+                PlexAuthentication session;
                 if (sessionsQuery.Any())
                 {
-                    TempData[LOGIN_RESULT_KEY] = sessionsQuery.OrderBy(s => s.SessionStart).First();
+                    session = sessionsQuery.Single(); // there should really be only one session at this point
+                    // all we have to do now is update the time
+                    session.SessionStart = DateTime.Now;
+                    _plexSessionRepo.Update(session);
                 }
+                else
+                {
+                    // this sessions doesn't exist yet
+                    session = _plexSessionRepo.Save(user.Email, user.Token, user.Username, DateTime.Now, user.Thumbnail);
+                }
+
+                return Index(new PlexAuthenticationResultViewModel() {
+                    Succes = true
+                });
             }
 
-            return RedirectToAction("Index");
+            return Index(new PlexAuthenticationResultViewModel()
+            {
+                Succes = false,
+                Error = loginResult.Error
+            });
         }
 
         [HttpDelete]

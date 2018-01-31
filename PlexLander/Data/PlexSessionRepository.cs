@@ -15,32 +15,13 @@ namespace PlexLander.Data
             _context = context;
         }
 
-        public void Update(string email, string token, string username, DateTime sessionStart, string thumbnail = "", IEnumerable<PlexServer> servers = null)
+        public void Update(PlexAuthentication authentication)
         {
-            var session = _context.PlexSessions.Find(email, token);
-
-            session.Username = username;
-            session.SessionStart = sessionStart;
-            if ((session.Servers != null && session.Servers.Count > 0) &&
-                servers != null)
-            {
-                // we've been passed servers and there are servers present
-                if (servers.Count() > 0)
-                {
-                    //we've been told to clear all saved servers
-                    session.Servers.Clear();
-                }
-                else
-                {
-                    //add the servers to the current ones
-                    session.Servers.AddRange(servers);
-                }
-            }
-
-            _context.PlexSessions.Update(session);
+            _context.PlexSessions.Update(authentication);
+            _context.SaveChanges();
         }
 
-        public void Save(string email, string token, string username, DateTime sessionStart, string thumbnail = "", IEnumerable<PlexServer> servers = null)
+        public PlexAuthentication Save(string email, string token, string username, DateTime sessionStart, string thumbnail = "", IEnumerable<PlexServer> servers = null)
         {
             var session = new PlexAuthentication
             {
@@ -61,8 +42,10 @@ namespace PlexLander.Data
                 session.Thumbnail = thumbnail;
             }
 
-            _context.PlexSessions.Add(session);
+            var returnVal = _context.PlexSessions.Add(session);
             _context.SaveChanges();
+
+            return returnVal.Entity;
         }
 
         /// <summary>
