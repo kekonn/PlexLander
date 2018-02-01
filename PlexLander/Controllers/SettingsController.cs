@@ -110,8 +110,10 @@ namespace PlexLander.Controllers
                 if (sessionsQuery.Any())
                 {
                     session = sessionsQuery.Single(); // there should really be only one session at this point
-                    // all we have to do now is update the time
+                    // all we have to do now is update the time and refresh the thumbnail
                     session.SessionStart = DateTime.Now;
+                    session.Thumbnail = loginResult.User.Thumbnail;
+
                     _plexSessionRepo.Update(session);
                 }
                 else

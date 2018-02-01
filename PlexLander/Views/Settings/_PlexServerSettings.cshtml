@@ -10,15 +10,14 @@
     {
         <div class="form-group">
             @Html.LabelFor(m => m.PlexServerSettingsViewModel.IsEnabled)?
-            @Html.ToggleSwitchFor(m => m.PlexServerSettingsViewModel.IsEnabled)
-            <button type="submit" class="btn btn-default">Save</button>
+            @Html.ToggleSwitchFor(m => m.PlexServerSettingsViewModel.IsEnabled, disabled: true)
         </div>
 
         if (Model.PlexServerSettingsViewModel.IsEnabled)
         {
             <div class="form-group" id="plexsettings-followup">
                 @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
-                @Html.TextBoxFor(m => m.PlexServerSettingsViewModel.Token)<br />
+                @Model.PlexServerSettingsViewModel.Token<br />
                 @Html.LabelFor(m => m.PlexServerSettingsViewModel.HasAuthentication)?
 
                 @if (!Model.PlexServerSettingsViewModel.HasAuthentication)
