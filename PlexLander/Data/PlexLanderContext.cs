@@ -14,10 +14,12 @@ namespace PlexLander.Data
         }
 
         public DbSet<App> Apps { get; set; }
+        public DbSet<PlexAuthentication> PlexSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<App>().ToTable("Apps");
+            modelBuilder.Entity<PlexAuthentication>().ToTable("PlexSessions").HasKey(a => new { a.Email, a.Token });
         }
     }
 

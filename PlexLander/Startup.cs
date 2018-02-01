@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using PlexLander.Data;
 using PlexLander.Configuration;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace PlexLander
 {
@@ -37,9 +38,13 @@ namespace PlexLander
             services.Configure<ServerConfiguration>(Configuration.GetSection("ServerConfiguration"));
             //Add EFCore
             services.AddDbContext<PlexLanderContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            //Add caching
+            services.AddMemoryCache();
 
             //add own components
             services.AddSingleton<IConfigurationManager,ConfigurationManager>();
+            services.AddSingleton<Plex.IPlexService, Plex.PlexService>();
+            services.AddSingleton<IWhatsNewService, WhatsNewService>();
             services.AddRepositories();
             services.AddServers();
         }
@@ -70,6 +75,17 @@ namespace PlexLander
                     name: "default",
                     template: "{controller=Landing}/{action=Index}");
             });
+        }
+    }
+
+    public class PlexLanderContextFactory : IDesignTimeDbContextFactory<PlexLanderContext>
+    {
+        public PlexLanderContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<PlexLanderContext>();
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=PlexLander;Trusted_Connection=True;MultipleActiveResultSets=true");
+
+            return new PlexLanderContext(optionsBuilder.Options);
         }
     }
 }

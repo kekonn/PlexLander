@@ -8,8 +8,11 @@ namespace PlexLander.ViewModels.Settings
 {
     public class PlexServerSettingsViewModel
     {
-        [DisplayName("Enable?")]
+        [DisplayName("Enable")]
         public bool IsEnabled { get; set; }
         public string Token { get; set; }
+        [DisplayName("Authenticated")]
+        public bool HasAuthentication { get; set; }
+        public PlexAuthenticationResultViewModel AuthenticationResult { get; set; }
     }
 }

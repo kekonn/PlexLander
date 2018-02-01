@@ -7,9 +7,12 @@ namespace PlexLander.HtmlHelpers
 {
     public static class HtmlHelperExtensions
     {
-        public static IHtmlContent ToggleSwitchFor<TModel>(this IHtmlHelper<TModel> html, Expression<Func<TModel, bool>> expression)
+        public static IHtmlContent ToggleSwitchFor<TModel>(this IHtmlHelper<TModel> html, Expression<Func<TModel, bool>> expression, bool disabled = false)
         {
-            return html.CheckBoxFor(expression, new { @data_toggle = "toggle" });
+            if (disabled)
+                return html.CheckBoxFor(expression, new { @data_toggle = "toggle", disabled });
+            else
+                return html.CheckBoxFor(expression, new { @data_toggle = "toggle" });
         }
     }
 }

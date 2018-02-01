@@ -28,7 +28,7 @@
         appEnumerator.MoveNext();
     }
     for (var i = 1; i <= rowCount; i++)
-    {        
+    {
         <div class="row">
             <div class="col-md-4">
                 <div class="app-presenter">
@@ -44,27 +44,27 @@
             <div class="col-md-4">
                 <div class="app-presenter">
                     @if (appEnumerator.Current != null)
-    {
+                    {
                         <a href="@GetUrl(appEnumerator.Current)">
                             <img src="/images/@appEnumerator.Current.Icon" width="256" height="256" /><br />
                             <h3>@appEnumerator.Current.Name</h3>
                         </a>
                         appEnumerator.MoveNext();
-    }
+                    }
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="app-presenter">
                     @if (appEnumerator.Current != null)
-    {
+                    {
                         <a href="@GetUrl(appEnumerator.Current)">
                             <img src="/images/@appEnumerator.Current.Icon" width="256" height="256" /><br />
                             <h3>@appEnumerator.Current.Name</h3>
                         </a>
                         @appEnumerator.MoveNext();
-    }
+                    }
                 </div>
             </div>
         </div>
-                        }
+    }
 }

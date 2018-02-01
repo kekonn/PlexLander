@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
+using PlexLander.Plex;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,28 +19,36 @@ namespace PlexLander.Controllers
     public class SettingsController : PlexLanderBaseController
     {
         private readonly IAppRepository _appRepo;
+        private readonly IPlexService _plexService;
+        private readonly IPlexSessionRepository _plexSessionRepo;
+        private readonly TimeSpan _maxSessionAge = TimeSpan.FromDays(10d);
 
-        public SettingsController(IAppRepository appRepo, IConfigurationManager configManager) : base(configManager)
+        public SettingsController(IPlexService plexService, IAppRepository appRepo,
+            IPlexSessionRepository plexSessionRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
+            _plexService = plexService;
+            _plexSessionRepo = plexSessionRepo;
         }
 
         // GET: /Settings/
-        public IActionResult Index()
+        [HttpGet()]
+        public IActionResult Index([Bind("Succes", "Error")]PlexAuthenticationResultViewModel authResult)
         {
-            return View(new SettingsIndexViewModel(ServerName)
+            var vm = new SettingsIndexViewModel(ServerName)
             {
-                Apps = _appRepo.ListAll(),
-                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel()
-            });
-        }
-
-        //POST: /Settings/SavePlexServerSettings
-        [HttpPost()]
-        [ValidateAntiForgeryToken()]
-        public async Task<IActionResult> SavePlexServerSettings(bool isEnabled, string token)
-        {
-            throw new NotImplementedException();
+                Apps = _appRepo.ListAll()
+            };
+            if (!authResult.Succes && authResult.Error == null) // default values, so index was called without parameters
+            {
+                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(null);
+                return View(vm);
+            }
+            else
+            {
+                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(authResult);
+                return View(vm);
+            }
         }
 
         //POST: /Settings/AddApp
@@ -86,6 +95,39 @@ namespace PlexLander.Controllers
             return Json(new { ErrorMessage = "fail" });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlexAuthentication(string username, string password)
+        {
+            var loginResult = await _plexService.Login(username, password);
+            if (loginResult.Succes)
+            {
+                var user = loginResult.User;
+                _plexSessionRepo.DeleteOldSessions(_maxSessionAge);
+                var sessionsQuery = _plexSessionRepo.GetSessionsForEmail(loginResult.User.Email).Where(s => s.Token == user.Token && s.Username == user.Username);
+
+                PlexAuthentication session;
+                if (sessionsQuery.Any())
+                {
+                    session = sessionsQuery.Single(); // there should really be only one session at this point
+                    // all we have to do now is update the time and refresh the thumbnail
+                    session.SessionStart = DateTime.Now;
+                    session.Thumbnail = loginResult.User.Thumbnail;
+
+                    _plexSessionRepo.Update(session);
+                }
+                else
+                {
+                    // this sessions doesn't exist yet, so we'll save it now
+                    session = _plexSessionRepo.Save(user.Email, user.Token, user.Username, DateTime.Now, user.Thumbnail);
+                }
+
+                return RedirectToAction("Index", new { Succes = true });
+            }
+
+            return RedirectToAction("Index", new { Succes = false, Error = loginResult.Error });
+        }
+
         [HttpDelete]
         public IActionResult DeleteApp(int id)
         {
@@ -102,12 +144,14 @@ namespace PlexLander.Controllers
             return RedirectToAction("Index");
         }
 
-        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel()
+        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel(PlexAuthenticationResultViewModel plexLoginResult)
         {
             return new PlexServerSettingsViewModel()
             {
                 IsEnabled = ConfigManager.IsPlexEnabled,
-                Token = ConfigManager.PlexApp.Token
+                Token = ConfigManager.PlexApp.Token,
+                HasAuthentication = _plexService.HasValidLogin,
+                AuthenticationResult = plexLoginResult
             };
         }
     }

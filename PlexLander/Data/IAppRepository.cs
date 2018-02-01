@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace PlexLander.Data
 {
-    public interface IAppRepository
+    public interface IAppRepository : IRepository<App>
     {
         IQueryable<App> ListAll();
-        void Add(App app);
-        void Update(App app);
-        void Remove(App app);
-        void Remove(int id);
     }
 }

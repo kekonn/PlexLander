@@ -1,43 +1,38 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using PlexLander.Models;
-using PlexLander.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace PlexLander.Data
 {
     public class AppRepository : IAppRepository
     {
-        private PlexLanderContext context;
+        private PlexLanderContext _context;
 
         public AppRepository(PlexLanderContext context)
         {
-            this.context = context;
+            _context = context;
         }
 
         public void Add(App app)
         {
-            context.Add(app);
-            context.SaveChanges();
+            _context.Add(app);
+            _context.SaveChanges();
         }
 
         public IQueryable<App> ListAll()
         {
-            return context.Apps.AsNoTracking();
+            return _context.Apps.AsNoTracking();
         }
 
         public void Remove(App app)
         {
-            context.Remove(app);
-            context.SaveChanges();
+            _context.Remove(app);
+            _context.SaveChanges();
         }
 
         public void Remove(int id)
         {
-            App haveApp = context.Apps.Where(a => a.Id == id).SingleOrDefault();
+            App haveApp = _context.Apps.Where(a => a.Id == id).SingleOrDefault();
             if (haveApp != null)
             {
                 Remove(haveApp);
@@ -46,8 +41,8 @@ namespace PlexLander.Data
 
         public void Update(App app)
         {
-            context.Update(app);
-            context.SaveChanges();
+            _context.Update(app);
+            _context.SaveChanges();
         }
     }
 }
