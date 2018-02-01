@@ -51,14 +51,6 @@ namespace PlexLander.Controllers
             }
         }
 
-        //POST: /Settings/SavePlexServerSettings
-        [HttpPost()]
-        [ValidateAntiForgeryToken()]
-        public async Task<IActionResult> SavePlexServerSettings(bool isEnabled, string token)
-        {
-            throw new NotImplementedException();
-        }
-
         //POST: /Settings/AddApp
         [HttpPost()]
         [ValidateAntiForgeryToken()]

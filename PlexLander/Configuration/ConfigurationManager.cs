@@ -23,8 +23,12 @@ namespace PlexLander.Configuration
         string PlatformVersion { get; }
 
         //methods
-        IEnumerable<BuiltInApp> ListAll();
 
+        /// <summary>
+        /// Gets a list of all the built in applications.
+        /// </summary>
+        /// <returns>an IEnumerable&lt;BuiltInApp&gt; of apps.</returns>
+        IEnumerable<BuiltInApp> ListAll();
     }
 
     public class ConfigurationManager : IConfigurationManager
@@ -116,10 +120,6 @@ namespace PlexLander.Configuration
             }
         }
 
-        /// <summary>
-        /// Gets a list of all the built in applications.
-        /// </summary>
-        /// <returns>an IEnumerable&lt;BuiltInApp&gt; of apps.</returns>
         public IEnumerable<BuiltInApp> ListAll()
         {
             var appList = new List<BuiltInApp>(4);
