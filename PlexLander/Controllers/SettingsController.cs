@@ -23,9 +23,7 @@ namespace PlexLander.Controllers
         private readonly IPlexSessionRepository _plexSessionRepo;
         private readonly TimeSpan _maxSessionAge = TimeSpan.FromDays(10d);
 
-        private const string LOGIN_RESULT_KEY = "Login result";
-
-        public SettingsController(IPlexService plexService, IAppRepository appRepo, 
+        public SettingsController(IPlexService plexService, IAppRepository appRepo,
             IPlexSessionRepository plexSessionRepo, IConfigurationManager configManager) : base(configManager)
         {
             _appRepo = appRepo;
@@ -34,13 +32,23 @@ namespace PlexLander.Controllers
         }
 
         // GET: /Settings/
-        public IActionResult Index(PlexAuthenticationResultViewModel session = null)
+        [HttpGet()]
+        public IActionResult Index([Bind("Succes", "Error")]PlexAuthenticationResultViewModel authResult)
         {
-            return View(new SettingsIndexViewModel(ServerName)
+            var vm = new SettingsIndexViewModel(ServerName)
             {
-                Apps = _appRepo.ListAll(),
-                PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(session)
-            });
+                Apps = _appRepo.ListAll()
+            };
+            if (!authResult.Succes && authResult.Error == null) // default values, so index was called without parameters
+            {
+                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(null);
+                return View(vm);
+            }
+            else
+            {
+                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(authResult);
+                return View(vm);
+            }
         }
 
         //POST: /Settings/SavePlexServerSettings
@@ -116,20 +124,14 @@ namespace PlexLander.Controllers
                 }
                 else
                 {
-                    // this sessions doesn't exist yet
+                    // this sessions doesn't exist yet, so we'll save it now
                     session = _plexSessionRepo.Save(user.Email, user.Token, user.Username, DateTime.Now, user.Thumbnail);
                 }
 
-                return Index(new PlexAuthenticationResultViewModel() {
-                    Succes = true
-                });
+                return RedirectToAction("Index", new { Succes = true });
             }
 
-            return Index(new PlexAuthenticationResultViewModel()
-            {
-                Succes = false,
-                Error = loginResult.Error
-            });
+            return RedirectToAction("Index", new { Succes = false, Error = loginResult.Error });
         }
 
         [HttpDelete]
