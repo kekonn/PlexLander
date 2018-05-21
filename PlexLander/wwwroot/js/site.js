@@ -104,3 +104,13 @@ function wireUpForm(formIdentifier) {
             form.submit();
     });
 }
+
+/**
+ * Calls a given url to refresh the plex servers
+ * @param {string} updateUrl the url to call for the update, convenience so that we can generate the url server side
+ */
+function callAndRefresh(updateUrl) {
+    $.get(updateUrl).done(function () {
+        location.reload();
+    });
+}
