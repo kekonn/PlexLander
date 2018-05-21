@@ -128,6 +128,17 @@ namespace PlexLander.Controllers
             return RedirectToAction("Index", new { Succes = false, Error = loginResult.Error });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> RefreshPlexServers()
+        {
+            var servers = await _plexService.GetPlexServerAsync();
+            var lastSession = _plexSessionRepo.GetLastSession();
+
+            lastSession.Servers.AddRange(servers);
+
+            return new EmptyResult();
+        }
+
         [HttpDelete]
         public IActionResult DeleteApp(int id)
         {

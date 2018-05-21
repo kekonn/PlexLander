@@ -17,11 +17,13 @@ namespace PlexLander.Plex
     {
         Task<LoginResult> Login(string username, string password);
         bool HasValidLogin { get; }
+        Task<IEnumerable<PlexServer>> GetPlexServerAsync();
     }
 
     public class PlexService : IPlexService
     {
         // how to find plex token: https://support.plex.tv/hc/en-us/articles/204059436
+        // api description
 
         #region Logging
         private readonly ILogger<IPlexService> _logger;
@@ -42,6 +44,7 @@ namespace PlexLander.Plex
         private const string PLEX_LOGIN_ENDPOINT = "users/sign_in.xml";
         private const string HTTP_AUTHORIZATION = "Authorization";
         private const string HTTP_BASIC_FORMAT = "Basic {0}";
+        private readonly TimeSpan SessionTimeout = new TimeSpan(10, 0, 0, 0, 0);
         #endregion
 
         #region Plex.tv constants
@@ -61,7 +64,7 @@ namespace PlexLander.Plex
             get
             {
                 return _lastLoginResult != null
-                && (DateTime.Now - _lastLoginResult.Item1).Days <= 10
+                && (DateTime.Now.Date - _lastLoginResult.Item1) <= SessionTimeout
                 && _lastLoginResult.Item2.Succes == true;
             }
         }
@@ -144,6 +147,11 @@ namespace PlexLander.Plex
             return client;
         }
 
+        private HttpClient GetPlexTvClient()
+        {
+            return GetPlexClient(PLEX_TV_BASE);
+        }
+
         private HttpClient GetLoginClient()
         {
             return GetBaseClient(PLEX_LOGIN_BASE);
@@ -195,6 +203,26 @@ namespace PlexLander.Plex
                 Thumbnail = (string)root.Attribute("thumb"),
                 Token = (string)root.Attribute("authToken")
             };
+        }
+        #endregion
+
+        #region Servers
+        public async Task<IEnumerable<PlexServer>> GetPlexServerAsync()
+        {
+            if (!HasValidLogin)
+                throw new InvalidOperationException("Please get a valid session from Plex.TV first");
+
+
+            using (var client = GetPlexTvClient())
+            {
+                var result = await client.GetAsync(PLEX_TV_SERVERS_ENDPOINT);
+
+                if (result.IsSuccessStatusCode)
+                {
+                    //TODO: figure this out
+                }
+            }
+            throw new NotImplementedException();
         }
         #endregion
 
