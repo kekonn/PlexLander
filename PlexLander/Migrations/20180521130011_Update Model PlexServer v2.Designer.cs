@@ -11,9 +11,10 @@ using System;
 namespace PlexLander.Migrations
 {
     [DbContext(typeof(PlexLanderContext))]
-    partial class PlexLanderContextModelSnapshot : ModelSnapshot
+    [Migration("20180521130011_Update Model PlexServer v2")]
+    partial class UpdateModelPlexServerv2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

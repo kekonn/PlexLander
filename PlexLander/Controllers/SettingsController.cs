@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
 using PlexLander.Plex;
+using PlexLander.Mapping;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -33,7 +34,7 @@ namespace PlexLander.Controllers
 
         // GET: /Settings/
         [HttpGet()]
-        public IActionResult Index([Bind("Succes", "Error")]PlexAuthenticationResultViewModel authResult)
+        public async Task<IActionResult> Index([Bind("Succes", "Error")]PlexAuthenticationResultViewModel authResult)
         {
             var vm = new SettingsIndexViewModel(ServerName)
             {
@@ -41,12 +42,12 @@ namespace PlexLander.Controllers
             };
             if (!authResult.Succes && authResult.Error == null) // default values, so index was called without parameters
             {
-                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(null);
+                vm.PlexServerSettingsViewModel = await CreatePlexServerSettingsViewModelAsync(null);
                 return View(vm);
             }
             else
             {
-                vm.PlexServerSettingsViewModel = CreatePlexServerSettingsViewModel(authResult);
+                vm.PlexServerSettingsViewModel = await CreatePlexServerSettingsViewModelAsync(authResult);
                 return View(vm);
             }
         }
@@ -131,12 +132,22 @@ namespace PlexLander.Controllers
         [HttpGet]
         public async Task<IActionResult> RefreshPlexServers()
         {
-            var servers = await _plexService.GetPlexServerAsync();
             var lastSession = _plexSessionRepo.GetLastSession();
 
-            lastSession.Servers.AddRange(servers);
 
-            return new EmptyResult();
+            IEnumerable<Plex.PlexServer> plexServers = await _plexService.GetPlexServerAsync();
+            if (lastSession.Servers == null)
+            {
+                lastSession.Servers = new List<Models.PlexServer>(plexServers.Select(s => s.MapToEntity()));
+            }
+            else if (plexServers.Count() >= 0)
+            {
+                lastSession.Servers.AddRange(plexServers.Select(s => s.MapToEntity()));
+            }
+
+            _plexSessionRepo.Update(lastSession);
+
+            return new OkResult();
         }
 
         [HttpDelete]
@@ -155,14 +166,27 @@ namespace PlexLander.Controllers
             return RedirectToAction("Index");
         }
 
-        private PlexServerSettingsViewModel CreatePlexServerSettingsViewModel(PlexAuthenticationResultViewModel plexLoginResult)
+        private async Task<PlexServerSettingsViewModel> CreatePlexServerSettingsViewModelAsync(PlexAuthenticationResultViewModel plexLoginResult)
         {
-            return new PlexServerSettingsViewModel()
+            var plexServers = await _plexService.GetPlexServerAsync();
+            var vm = new PlexServerSettingsViewModel()
             {
                 IsEnabled = ConfigManager.IsPlexEnabled,
                 Token = ConfigManager.PlexApp.Token,
                 HasAuthentication = _plexService.HasValidLogin,
-                AuthenticationResult = plexLoginResult
+                AuthenticationResult = plexLoginResult,
+                PlexServers = new List<PlexServerViewModel>(plexServers.Select(s => MapPlexServerToViewModel(s)))
+            };
+
+            return vm;
+        }
+
+        private PlexServerViewModel MapPlexServerToViewModel(Plex.PlexServer plexServer)
+        {
+            return new PlexServerViewModel()
+            {
+                Name = plexServer.Name,
+                Url = plexServer.GetUri()
             };
         }
     }

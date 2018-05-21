@@ -13,19 +13,31 @@
 
     @if (Model.PlexServerSettingsViewModel.IsEnabled)
     {
-    <div class="form-group" id="plexsettings-followup">
-        @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
-        @Model.PlexServerSettingsViewModel.Token<br />
-        @Html.LabelFor(m => m.PlexServerSettingsViewModel.HasAuthentication)?
+        <div class="form-group" id="plexsettings-followup">
+            @Html.LabelFor(m => m.PlexServerSettingsViewModel.Token)<text>: </text>
+            @Model.PlexServerSettingsViewModel.Token<br />
+            @Html.LabelFor(m => m.PlexServerSettingsViewModel.HasAuthentication)?
 
-        @if (!Model.PlexServerSettingsViewModel.HasAuthentication)
+            @if (!Model.PlexServerSettingsViewModel.HasAuthentication)
+            {
+                <button type="button" class="btn btn-warning" onclick="showModal('#modalPlexAuthentication')">Authenticate</button>
+            }
+            else
+            {
+                <span class="glyphicon glyphicon-ok-circle"></span> <button class="btn btn-success" onclick="callAndRefresh('@Url.Action("RefreshPlexServers","Settings")')">Refresh Servers</button>
+            }
+        </div>
+        @if (Model.PlexServerSettingsViewModel.PlexServers.Count > 0)
         {
-            <button type="button" class="btn btn-warning" onclick="showModal('#modalPlexAuthentication')">Authenticate</button>
+            <h3>Plex Servers available</h3>
+            <div>
+                <ul>
+                    @foreach (var server in Model.PlexServerSettingsViewModel.PlexServers)
+                    {
+                        <li><a href="@server.Url">@server.Name</a></li>
+                    }
+                </ul>
+            </div>
         }
-        else
-        {
-            <span class="glyphicon glyphicon-ok-circle"></span> <button class="btn btn-success" onclick="callAndRefresh('@Url.Action("RefreshPlexServers","Settings")')">Refresh Servers</button>
-        }
-    </div>
     }
 </div>

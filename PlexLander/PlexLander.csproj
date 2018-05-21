@@ -4,12 +4,13 @@
     <TargetFramework>net462</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
     <UserSecretsId>7e82a2ce-a20b-4b24-b2a7-bdc0c5c3349f</UserSecretsId>
-    <Version>0.1.0</Version>
+    <Version>0.5.0</Version>
     <Company>Jonas Van der Aa</Company>
     <PackageLicenseUrl>https://github.com/bloodsplatter/PlexLander/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bloodsplatter/PlexLander</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bloodsplatter/PlexLander</RepositoryUrl>
     <StartupObject>PlexLander.Program</StartupObject>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

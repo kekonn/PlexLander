@@ -10,8 +10,7 @@ namespace PlexLander.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Hostname { get; set; }
-        public int Port { get; set; }
-        public string Endpoint { get; set; }
+        public string Name { get; set; }
+        public string Uri { get; set; }
     }
 }

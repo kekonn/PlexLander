@@ -14,5 +14,7 @@ namespace PlexLander.ViewModels.Settings
         [DisplayName("Authenticated")]
         public bool HasAuthentication { get; set; }
         public PlexAuthenticationResultViewModel AuthenticationResult { get; set; }
+
+        public List<PlexServerViewModel> PlexServers { get; set; }
     }
 }

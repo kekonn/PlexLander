@@ -64,8 +64,8 @@ namespace PlexLander.Plex
             get
             {
                 return _lastLoginResult != null
-                && (DateTime.Now.Date - _lastLoginResult.Item1) <= SessionTimeout
-                && _lastLoginResult.Item2.Succes == true;
+                    && (DateTime.Now.Date - _lastLoginResult.Item1) <= SessionTimeout
+                    && _lastLoginResult.Item2.Succes == true;
             }
         }
         #endregion
@@ -144,6 +144,16 @@ namespace PlexLander.Plex
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_HEADER, _configManager.PlatformName);
             client.DefaultRequestHeaders.Add(X_PLEX_PLATFORM_VERSION_HEADER, _configManager.PlatformVersion);
 
+            LoadLastLogin(); //ensures all objects present when there is still a valid session
+
+            if (_lastLoginResult != null) // if null, no valid session
+            {
+                client.DefaultRequestHeaders.Add(X_PLEX_TOKEN_HEADER, _lastLoginResult.Item2.User.Token);
+            } else
+            {
+                throw new InvalidOperationException("Please create a valid session first. The previous session has likely expired.");
+            }
+
             return client;
         }
 
@@ -193,7 +203,7 @@ namespace PlexLander.Plex
         private PlexUser GetPlexUserFromXml(XDocument doc)
         {
             if (doc == null)
-                throw new ArgumentException("doc");
+                throw new ArgumentNullException("doc");
 
             var root = doc.Element("user");
             return new PlexUser
@@ -219,10 +229,50 @@ namespace PlexLander.Plex
 
                 if (result.IsSuccessStatusCode)
                 {
-                    //TODO: figure this out
+                    var serversDoc = XDocument.Parse(await result.Content.ReadAsStringAsync());
+                    var servers = GetPlexServersFromXML(serversDoc);
+                    return servers;
+                } else
+                {
+                    throw new InvalidOperationException($"The request has failed with the following status: {result.StatusCode.ToString()}.");
                 }
             }
-            throw new NotImplementedException();
+        }
+
+        private List<PlexServer> GetPlexServersFromXML(XDocument serversDoc)
+        {
+            if (serversDoc == null)
+                throw new ArgumentNullException("serversDoc");
+
+            var root = serversDoc.Element("MediaContainer");
+            var serverList = new List<PlexServer>(5);
+            foreach (var serverNode in root.Descendants())
+            {
+                var server = new PlexServer()
+                {
+                    Name = (string)serverNode.Attribute("name"),
+                    AccessToken = (string)serverNode.Attribute("accessToken"),
+                    Address = (string)serverNode.Attribute("address"),
+                    Port = (string)serverNode.Attribute("port"),
+                    Scheme = (string)serverNode.Attribute("scheme"),
+                    Owned = (bool)serverNode.Attribute("owned"),
+                    LastUpdated = new DateTime(1970, 1, 1).AddSeconds((double)serverNode.Attribute("updatedAt")),
+                    UsesPlexHome = (serverNode.Attribute("home") == null || (serverNode.Attribute("home") != null && ((string)serverNode.Attribute("home")).Equals("1")))
+                };
+
+                var localAddresses = (string)serverNode.Attribute("localAddresses");
+                if (!string.IsNullOrEmpty(localAddresses))
+                {
+                    server.LocalAddresses = new List<string>(localAddresses.Split(','));
+                } else
+                {
+                    server.LocalAddresses = new List<string>(0);
+                }
+
+                serverList.Add(server);
+            }
+
+            return serverList;
         }
         #endregion
 
