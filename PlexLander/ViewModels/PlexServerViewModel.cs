@@ -9,5 +9,6 @@ namespace PlexLander.ViewModels
     {
         public string Url { get; set; }
         public string Name { get; set; }
+        public bool Owned { get; set; } = false;
     }
 }
