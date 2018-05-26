@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PlexLander.Configuration;
 using PlexLander.Data;
+using PlexLander.ViewModels;
 using PlexLander.ViewModels.Settings;
 using PlexLander.Models;
 using System.Collections.Generic;
