@@ -11,7 +11,7 @@
     @using (Html.BeginForm("Index", "WhatsNew", FormMethod.Post, new { @class = "form-inline" }))
     {
         <div class="form-group">
-            @Html.DropDownList("server", Model.Servers.Select(s => new SelectListItem() { Text = s.Name, Value = s.Name, Selected = (Model.SelectedServer == s)}), new { @class = "form-control"})
+            @Html.DropDownList("server", Model.Servers.Select(s => new SelectListItem() { Text = s.Name, Value = s.Url, Selected = (Model.SelectedServer == s)}), new { @class = "form-control"})
             <button type="submit" class="btn btn-success">Refresh</button>
         </div>
     }

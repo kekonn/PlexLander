@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PlexLander.Configuration;
@@ -25,17 +26,22 @@ namespace PlexLander.Controllers
 
         public async Task<IActionResult> Index(string server = null)
         {
-            var plexServers = await _plexService.GetPlexServerAsync();
+            var plexServers = new List<PlexServer>(await _plexService.GetPlexServerAsync()).OrderBy(s => s.Name);
             var vm = new IndexViewModel(ServerName) { Servers = new List<PlexServerViewModel>(plexServers.MapToViewModel()) };
+
+            PlexServer selectedServer = null;
             if (!string.IsNullOrWhiteSpace(server))
             {
-                var selectedServer = plexServers.SingleOrDefault(s => s.Name.Equals(server, StringComparison.InvariantCultureIgnoreCase));
+                selectedServer = plexServers.SingleOrDefault(s => s.GetUri().Equals(server, StringComparison.InvariantCultureIgnoreCase));
                 if (selectedServer == null)
                 {
                     selectedServer = plexServers.FirstOrDefault(s => s.Owned);
                 }
                 vm.SelectedServer = selectedServer.MapToViewModel();
             }
+            
+
+            _plexService.GetRecentlyAddedAsync(selectedServer ?? plexServers.First());
 
             return View(vm);
         }
