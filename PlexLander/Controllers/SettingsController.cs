@@ -169,7 +169,17 @@ namespace PlexLander.Controllers
 
         private async Task<PlexServerSettingsViewModel> CreatePlexServerSettingsViewModelAsync(PlexAuthenticationResultViewModel plexLoginResult)
         {
-            var plexServers = await _plexService.GetPlexServerAsync();
+
+            IEnumerable<Plex.PlexServer> plexServers;
+            try
+            {
+                plexServers = await _plexService.GetPlexServerAsync();
+            }
+            catch (UnauthorizedAccessException) //this happens when the session is no longer valid
+            {
+                plexServers = new List<Plex.PlexServer>(0);
+            }
+
             var vm = new PlexServerSettingsViewModel()
             {
                 IsEnabled = ConfigManager.IsPlexEnabled,

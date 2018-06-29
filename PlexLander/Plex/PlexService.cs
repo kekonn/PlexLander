@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using PlexLander.Models;
 using System.Text;
 using System.Xml.Linq;
 using System.Security.Cryptography;
@@ -18,6 +18,7 @@ namespace PlexLander.Plex
         Task<LoginResult> Login(string username, string password);
         bool HasValidLogin { get; }
         Task<IEnumerable<PlexServer>> GetPlexServerAsync();
+        void GetRecentlyAddedAsync(PlexServer plexServer);
     }
 
     public class PlexService : IPlexService
@@ -37,6 +38,8 @@ namespace PlexLander.Plex
         private const string X_PLEX_PRODUCT_HEADER = "X-Plex-Product";
         private const string X_PLEX_VERSION_HEADER = "X-Plex-Version";
         private const string X_PLEX_DEVICE_HEADER = "X-Plex-Device";
+        private const string X_PLEX_CONTAINER_START_HEADER = "X-Plex-Container-Start";
+        private const string X_PLEX_CONTAINER_SIZE_HEADER = "X-Plex-Container-Size";
         #endregion
 
         #region Login constants
@@ -51,6 +54,10 @@ namespace PlexLander.Plex
         private const string PLEX_TV_SERVERS_ENDPOINT = "pms/servers.xml";
         private const string PLEX_TV_ACCOUNT_ENDPOINT = "users/account.xml";
         private const string PLEX_TV_BASE = "https://plex.tv/";
+        #endregion
+
+        #region Plex Server Constants
+        private const string PLEX_SERVER_RECENTLY_ADDED_ENDPOINT = "library/recentlyAdded";
         #endregion
 
         private string apiEndpoint = "https://app.plex.tv/";
@@ -95,7 +102,8 @@ namespace PlexLander.Plex
             if (lastSession == null)
                 return;
 
-            _lastLoginResult = new Tuple<DateTime, LoginResult>(lastSession.SessionStart, new LoginResult() {
+            _lastLoginResult = new Tuple<DateTime, LoginResult>(lastSession.SessionStart, new LoginResult()
+            {
                 Succes = true,
                 User = new PlexUser
                 {
@@ -120,7 +128,10 @@ namespace PlexLander.Plex
                 endpoint = baseAddress;
             }
             else
+            {
+                //TODO add logging
                 throw new InvalidOperationException("No endpoint is defined. Set the default endpoint or pass an endpoint as a parameter.");
+            }
 
             var client = new HttpClient()
             {
@@ -146,20 +157,41 @@ namespace PlexLander.Plex
 
             LoadLastLogin(); //ensures all objects present when there is still a valid session
 
-            if (_lastLoginResult != null) // if null, no valid session
+            return client;
+        }
+
+        private HttpClient GetPlexServerClient(PlexServer server, string token)
+        {
+            var builder = new UriBuilder()
             {
-                client.DefaultRequestHeaders.Add(X_PLEX_TOKEN_HEADER, _lastLoginResult.Item2.User.Token);
-            } else
-            {
-                throw new InvalidOperationException("Please create a valid session first. The previous session has likely expired.");
-            }
+                Scheme = server.Scheme,
+                Host = server.Address,
+                Port = int.Parse(server.Port)
+            };
+
+            var client = GetPlexClient(builder.ToString());
+
+            client.DefaultRequestHeaders.Add(X_PLEX_TOKEN_HEADER, token);
 
             return client;
         }
 
         private HttpClient GetPlexTvClient()
         {
-            return GetPlexClient(PLEX_TV_BASE);
+            var client = GetPlexClient(PLEX_TV_BASE);
+
+
+            if (_lastLoginResult != null) // if null, no valid session
+            {
+                client.DefaultRequestHeaders.Add(X_PLEX_TOKEN_HEADER, _lastLoginResult.Item2.User.Token);
+            }
+            else
+            {
+                //TODO add logging
+                throw new InvalidOperationException("Please create a valid session first. The previous session has likely expired.");
+            }
+
+            return client;
         }
 
         private HttpClient GetLoginClient()
@@ -220,10 +252,10 @@ namespace PlexLander.Plex
         public async Task<IEnumerable<PlexServer>> GetPlexServerAsync()
         {
             if (!HasValidLogin)
-                throw new InvalidOperationException("Please get a valid session from Plex.TV first");
+                throw new UnauthorizedAccessException("Please get a valid session from Plex.TV first");
 
 
-            using (var client = GetPlexTvClient())
+            using (var client = SetPlexPage(GetPlexTvClient()))
             {
                 var result = await client.GetAsync(PLEX_TV_SERVERS_ENDPOINT);
 
@@ -232,8 +264,10 @@ namespace PlexLander.Plex
                     var serversDoc = XDocument.Parse(await result.Content.ReadAsStringAsync());
                     var servers = GetPlexServersFromXML(serversDoc);
                     return servers;
-                } else
+                }
+                else
                 {
+                    //TODO logging
                     throw new InvalidOperationException($"The request has failed with the following status: {result.StatusCode.ToString()}.");
                 }
             }
@@ -264,7 +298,8 @@ namespace PlexLander.Plex
                 if (!string.IsNullOrEmpty(localAddresses))
                 {
                     server.LocalAddresses = new List<string>(localAddresses.Split(','));
-                } else
+                }
+                else
                 {
                     server.LocalAddresses = new List<string>(0);
                 }
@@ -273,6 +308,43 @@ namespace PlexLander.Plex
             }
 
             return serverList;
+        }
+        #endregion
+
+        #region WhatsNew
+        /// <summary>
+        /// Gets recently added content of the specified server
+        /// </summary>
+        /// <param name="plexServer">the server to contact</param>
+        /// <exception cref="UnauthorizedAccessException">If the server returns a 401</exception>
+        public async void GetRecentlyAddedAsync(PlexServer plexServer)
+        {
+            if (!HasValidLogin)
+                throw new InvalidOperationException("Please get a valid session from Plex.TV first");
+
+            if (plexServer == null)
+                throw new ArgumentNullException("plexServer");
+
+            using (var client = GetPlexServerClient(plexServer, _configManager.PlexApp.Token))
+            {
+
+                var result = await client.GetAsync("/");
+                
+                if (result.IsSuccessStatusCode)
+                {
+                    var content = await result.Content.ReadAsStringAsync();
+                    throw new NotImplementedException();
+                }
+                else if (result.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedAccessException("Server does not allow this request. Please check session and credentials");
+                }
+                else
+                {
+                    //TODO logging
+                    throw new InvalidOperationException($"The request has failed with the following status: {result.StatusCode.ToString()}.");
+                }
+            }
         }
         #endregion
 
@@ -299,22 +371,15 @@ namespace PlexLander.Plex
                 sb.Append(byteChar.ToString("x2"));
             }
 
-            _logger.LogTrace("Client Identifier: {0}", sb.ToString());
             return sb.ToString();
         }
-    }
-
-    static class HttpClientExtensions
-    {
-        private const string X_PLEX_CONTAINER_START_HEADER = "X-Plex-Container-Start";
-        private const string X_PLEX_CONTAINER_SIZE_HEADER = "X-Plex-Container-Size";
 
         /// <summary>
         /// Sets the headers that do the paging
         /// </summary>
         /// <param name="start">at what item the page should start</param>
         /// <param name="count">the amount of items to return (or less if less are available)</param>
-        private static void SetPlexPage(this HttpClient client, int? start = 1, int? count = 10)
+        private HttpClient SetPlexPage(HttpClient client, int? start = 1, int? count = 10)
         {
             if (start.HasValue)
             {
@@ -326,6 +391,8 @@ namespace PlexLander.Plex
                 client.DefaultRequestHeaders.Remove(X_PLEX_CONTAINER_SIZE_HEADER);
                 client.DefaultRequestHeaders.Add(X_PLEX_CONTAINER_SIZE_HEADER, count.ToString());
             }
+
+            return client;
         }
     }
 }
